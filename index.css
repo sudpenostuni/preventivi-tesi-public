@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+:root { --font-main: 'Inter', system-ui, -apple-system, sans-serif; }
+body { 
+  font-family: var(--font-main); 
+  background-color: #0061ff; 
+  color: #1a1d21;
+  -webkit-tap-highlight-color: transparent; 
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.btn-touch { transition: transform 0.1s; }
+.btn-touch:active { transform: scale(0.98); }
+.section-transition {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+.section-closed { max-height: 0; opacity: 0; transform: translateY(10px); pointer-events: none; }
+.section-open { max-height: 5000px; opacity: 1; transform: translateY(0); margin-top: 1.5rem; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide { animation: slideIn 0.5s ease-out forwards; }
+@keyframes blink-orange {
+  0%, 100% { border-color: #e2e8f0; }
+  50% { border-color: #f97316; box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1); }
+}
+.animate-blink-orange { animation: blink-orange 2s infinite; }
