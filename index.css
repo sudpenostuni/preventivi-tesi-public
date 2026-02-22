@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brandBlue: #0061ff;
+  --color-slackPurple: #4a154b;
+  --color-paypalBlue: #1d2b83;
+  --color-notionGray: #f7f7f5;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+}
+
 :root { --font-main: 'Inter', system-ui, -apple-system, sans-serif; }
 body { 
   font-family: var(--font-main); 
