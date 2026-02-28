@@ -1,58 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Sparkles, Trash2, Loader2, FileScan, 
-  Send, Plus, Minus, ChevronDown, ChevronUp, ArrowRight, User, BookOpen, Palette, Receipt, CheckCircle2
+  Send, Plus, Minus, ChevronDown, ChevronUp, ArrowRight, User, Palette, Receipt, CheckCircle2, X
 } from 'lucide-react';
-
-const WA_PHONE = "393917972545";
-const LOGO_URL = "https://sudpen.weebly.com/uploads/5/1/0/3/51034189/editor/logo-2020.png?1761932030";
-const GSHEET_URL = "https://script.google.com/macros/s/AKfycbw0JgXopOWCGJ0HpwvneKPyi_pxd6SqYgnVh0EnxAkZzdnD0MBbPH_BRJ6vYwHbbRg8/exec";
-
-const PRICING = { bw: 0.05, color: { base: 0.30 } };
-
-const THESIS_MATS = [
-  { n: "BIANCO COTONE TELA", p: 30, c: "#F8F8FF" },
-  { n: "BIANCO PURO VINILE", p: 30, c: "#FFFFFF" },
-  { n: "BLU COBALTO EFFETTO PELLE", p: 25, c: "#0047AB" },
-  { n: "BLU ELETTRICO spalmato", p: 30, c: "#0000FF" },
-  { n: "BLU galassia VINILE", p: 25, c: "#2F4F4F" },
-  { n: "BLU KLEIN VINILE", p: 30, c: "#002FA7" },
-  { n: "BLU MARINO EFFETTO PELLE", p: 30, c: "#000080" },
-  { n: "BLU NAVY spalmato", p: 25, c: "#000080" },
-  { n: "BLU OLTREMARE vinile", p: 30, c: "#000080" },
-  { n: "BLU REALE seta", p: 30, c: "#4169E1" },
-  { n: "BORDEAUX seta", p: 30, c: "#800000" },
-  { n: "CANVAS tela", p: 30, c: "#D2B48C" },
-  { n: "CELESTE POLVERE spalmato", p: 25, c: "#B2DFFD" },
-  { n: "CREMA vinile", p: 25, c: "#FFFDD0" },
-  { n: "GLICINE spalmato", p: 30, c: "#DDA0DD" },
-  { n: "GRIGIO LONDRA TELA", p: 25, c: "#808080" },
-  { n: "MARRONE effetto pelle", p: 30, c: "#8B4513" },
-  { n: "NERO SETA", p: 30, c: "#000000" },
-  { n: "NERO TELA", p: 25, c: "#000000" },
-  { n: "NERO NOTTE spalmato", p: 25, c: "#2F4F4F" },
-  { n: "NERO vinile", p: 30, c: "#000000" },
-  { n: "ORO ANTICO seta", p: 30, c: "#B8860B" },
-  { n: "ORO BIANCO seta", p: 30, c: "#FAFAD2" },
-  { n: "ORO GIALLO tela", p: 30, c: "#FFD700" },
-  { n: "ORO GLICINE seta", p: 30, c: "#DDA0DD" },
-  { n: "ORO ROSA seta", p: 30, c: "#B76E79" },
-  { n: "PERGAMENA effetto pelle", p: 25, c: "#F0E68C" },
-  { n: "PORPORA perlato", p: 25, c: "#800080" },
-  { n: "RAME effetto pelle", p: 25, c: "#B87333" },
-  { n: "ROSA CONFETTO spalmato", p: 30, c: "#F8C8DC" },
-  { n: "ROSA PASTELLO tela", p: 25, c: "#FFB6C1" },
-  { n: "ROSSO CARDINALE VINILE", p: 30, c: "#C41E3A" },
-  { n: "ROSSO CARMINIO EFFETTO PELLE", p: 30, c: "#960018" },
-  { n: "ROSSO POMPEIANO vinile", p: 30, c: "#C32148" },
-  { n: "SABBIA effetto pelle", p: 25, c: "#F4A460" },
-  { n: "TORTORA spalmato", p: 25, c: "#D2B48C" },
-  { n: "VERDE CLOROFILLA vinile", p: 25, c: "#4C9A2A" },
-  { n: "VERDE MALACHITE effetto pelle", p: 30, c: "#004D40" },
-  { n: "VERDE MARINO spalmato", p: 30, c: "#3CB371" },
-  { n: "VERDE PINO seta", p: 30, c: "#01796F" },
-  { n: "VERDE VERONESE vinile", p: 30, c: "#4C9A2A" }
-].sort((a, b) => a.n.localeCompare(b.n, 'it'));
+import { motion, AnimatePresence } from 'framer-motion';
+import { THESIS_MATS, WA_PHONE, LOGO_URL, GSHEET_URL, PRICING } from './data';
 
 const fmt = (v: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(v);
 const safeNum = (v: any) => parseInt(v?.toString() || '0') || 0;
@@ -90,8 +42,8 @@ const App: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [isStarted, setIsStarted] = useState(false);
-  const [activeSections, setActiveSections] = useState({ covers: false, calc: false, summary: false });
-  const [showCatalog, setShowCatalog] = useState(false);
+  const [activeSections, setActiveSections] = useState({ covers: false, calc: false, summary: true });
+  const [selectedMatIndex, setSelectedMatIndex] = useState<number | null>(null);
   
   const detailsRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -109,6 +61,7 @@ const App: React.FC = () => {
     const mat = THESIS_MATS[idx];
     setTJobs([...tJobs, { id: Date.now().toString(), name: mat.n, bwPages: 0, colorPages: 0, cps: 1, matIdx: idx }]);
     setActiveSections(prev => ({ ...prev, calc: true }));
+    setSelectedMatIndex(null);
     
     setTimeout(() => {
       if (detailsRef.current) {
@@ -204,65 +157,115 @@ const App: React.FC = () => {
   return (
     <div className="max-w-md mx-auto min-h-screen flex flex-col p-6 space-y-6">
       
-      {/* 1. SCEGLI UN COLORE */}
+      {/* 1. REEL COPERTINE (Sempre visibile) */}
       {isStarted && (
         <div className="space-y-4 animate-slide" style={{ animationDelay: '0.1s' }}>
-          <button 
-            onClick={() => setActiveSections(p => ({...p, covers: !p.covers}))}
-            className="w-full bg-white/10 text-white p-5 rounded-3xl flex items-center justify-between border border-white/20 backdrop-blur-sm btn-touch"
-          >
-            <div className="flex items-center gap-3">
-              <Palette size={20} />
-              <span className="font-bold uppercase tracking-tight text-sm">Scegli un Colore</span>
-            </div>
-            {activeSections.covers ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </button>
-          <div className={`section-transition ${activeSections.covers ? 'section-open' : 'section-closed'}`}>
-            <div className="bg-white rounded-4xl p-5 card-shadow space-y-6">
-              <div className="w-full space-y-4">
-                <button
-                  onClick={() => setShowCatalog(!showCatalog)}
-                  className="w-full h-24 rounded-2xl bg-gray-50 text-white font-black text-lg uppercase flex items-center justify-center gap-2 border border-gray-200 hover:scale-[1.02] transition-transform shadow-sm relative overflow-hidden group"
-                  style={{ 
-                    backgroundImage: 'url(https://picsum.photos/seed/catalog/800/400)', 
-                    backgroundSize: 'cover', 
-                    backgroundPosition: 'center' 
-                  }}
-                >
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
-                  <div className="relative z-10 flex items-center gap-2">
-                    <BookOpen size={24} />
-                    {showCatalog ? "Nascondi Catalogo" : "Guarda il catalogo delle copertine"}
-                  </div>
-                </button>
-                {showCatalog && (
-                  <div className="w-full rounded-3xl overflow-hidden border shadow-sm animate-slide">
-                    <div className="relative w-full aspect-[3/4]">
-                      <iframe loading="lazy" className="absolute inset-0 w-full h-full border-none" src="https://www.canva.com/design/DAGzoF9gEAI/Mh5-JxtCydCBBBlyUVrnCA/view?embed" allowFullScreen></iframe>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white rounded-4xl overflow-hidden card-shadow relative">
+              {/* Reel Container */}
+              <div className="h-[60vh] overflow-y-scroll snap-y snap-mandatory scroll-smooth no-scrollbar bg-black p-2 space-y-4">
                 {THESIS_MATS.map((m, i) => (
-                  <button key={i} onClick={() => handleThesisSelect(i)} className="w-full group btn-touch">
-                    <div 
-                      className="w-full aspect-[3/4] rounded-2xl border-[4px] flex flex-col items-center justify-center p-2 text-center transition-all bg-white hover:shadow-lg relative overflow-hidden" 
-                      style={{ borderColor: m.c }}
-                    >
-                      <div className="absolute inset-0 opacity-10" style={{ backgroundColor: m.c }} />
-                      <div className="relative z-10 flex flex-col items-center justify-center h-full w-full gap-2">
-                        <span className="text-xs font-bold uppercase tracking-wide leading-snug text-gray-900 break-words w-full px-1">{m.n}</span>
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-white/90 px-2 py-1 rounded-full shadow-sm">{fmt(m.p)}</span>
+                  <div 
+                    key={i} 
+                    className="w-full aspect-[3/4] snap-center snap-always relative flex items-center justify-center bg-gray-900 cursor-pointer rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+                    onClick={() => setSelectedMatIndex(i)}
+                  >
+                    <img 
+                      src={m.img} 
+                      alt={m.n} 
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    
+                    {/* Swipe Hint on First Image */}
+                    {i === 0 && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
+                         <motion.div 
+                           initial={{ opacity: 0, y: 20 }}
+                           animate={{ opacity: [0, 1, 0], y: [20, 0, -20] }}
+                           transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                           className="bg-black/50 backdrop-blur px-4 py-2 rounded-full text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2"
+                         >
+                            Swipe <ArrowRight className="-rotate-90" size={14} />
+                         </motion.div>
                       </div>
+                    )}
+
+                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end p-6">
+                       <div className="w-full">
+                         <p className="text-white font-black uppercase text-lg leading-none mb-1">{m.n}</p>
+                         <p className="text-white/60 font-bold text-xs uppercase tracking-widest">Clicca per dettagli</p>
+                       </div>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
-          </div>
         </div>
       )}
+
+      {/* Selected Material Modal */}
+      <AnimatePresence>
+        {selectedMatIndex !== null && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setSelectedMatIndex(null)}
+          >
+            <motion.div 
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="relative h-64">
+                <img 
+                  src={THESIS_MATS[selectedMatIndex].img} 
+                  alt={THESIS_MATS[selectedMatIndex].n} 
+                  className="w-full h-full object-cover"
+                />
+                <button 
+                  onClick={() => setSelectedMatIndex(null)}
+                  className="absolute top-4 right-4 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                <div>
+                  <h3 className="text-xl font-black uppercase text-gray-900 leading-tight mb-2">
+                    {THESIS_MATS[selectedMatIndex].n}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 bg-brandBlue/10 text-brandBlue font-bold text-sm rounded-full uppercase tracking-wider">
+                      Prezzo Copertina: {fmt(THESIS_MATS[selectedMatIndex].p)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <button 
+                    onClick={() => handleThesisSelect(selectedMatIndex)}
+                    className="w-full h-14 bg-brandBlue text-white rounded-xl font-bold text-lg uppercase tracking-wide shadow-lg shadow-blue-900/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                  >
+                    Seleziona questa <CheckCircle2 size={20} />
+                  </button>
+                  <button 
+                    onClick={() => setSelectedMatIndex(null)}
+                    className="w-full h-14 bg-gray-100 text-gray-500 rounded-xl font-bold text-sm uppercase tracking-wide hover:bg-gray-200 transition-colors"
+                  >
+                    Torna alla consultazione
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 2. DETTAGLI STAMPA */}
       {isStarted && (
@@ -283,36 +286,41 @@ const App: React.FC = () => {
                 {tJobs.map(j => (
                   <div key={j.id} className="bg-white rounded-4xl p-6 card-shadow space-y-6 border border-gray-100">
                     <div className="flex justify-between items-center border-b pb-4">
-                      <div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Copertina selezionata:</p>
-                        <span className="font-black text-sm uppercase text-brandBlue">{j.name}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-gray-100">
+                           <img src={THESIS_MATS[j.matIdx].img} className="w-full h-full object-cover" alt="" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Copertina:</p>
+                          <span className="font-black text-sm uppercase text-brandBlue">{j.name}</span>
+                        </div>
                       </div>
                       <button onClick={() => setTJobs(p => p.filter(x => x.id !== j.id))} className="text-gray-300 p-1 hover:text-red-400 transition-colors">
                         <Trash2 size={18} />
                       </button>
                     </div>
                     
+                    {/* Didascalia nera ben visibile */}
+                    <div className="pb-4">
+                      <p className="text-xs font-bold text-gray-900 text-center leading-tight">
+                        Inserisci il numero di pagine manualmente o carica il tuo file per analisi automatica.
+                      </p>
+                    </div>
+
                     {/* Campi di input SPOSTATI IN ALTO */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-400 uppercase ml-1">B/N</label>
+                        <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Bianco e Nero</label>
                         <NumIn v={j.bwPages} onChange={v => setTJobs(p => p.map(x => x.id === j.id ? {...x, bwPages: v as number} : x))} />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Colore</label>
+                        <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Colori</label>
                         <NumIn v={j.colorPages} onChange={v => setTJobs(p => p.map(x => x.id === j.id ? {...x, colorPages: v as number} : x))} />
                       </div>
                       <div className="col-span-2 space-y-1.5 pt-2">
                         <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Numero di Copie</label>
                         <NumIn v={j.cps} min={1} onChange={v => setTJobs(p => p.map(x => x.id === j.id ? {...x, cps: v as number} : x))} />
                       </div>
-                    </div>
-
-                    {/* Didascalia nera ben visibile */}
-                    <div className="py-2">
-                      <p className="text-xs font-bold text-gray-900 text-center leading-tight">
-                        Inserisci il numero di pagine manualmente o carica il tuo file per analisi automatica.
-                      </p>
                     </div>
 
                     {/* Tasto Analizza PDF in fondo */}
@@ -379,7 +387,7 @@ const App: React.FC = () => {
                                   </div>
                                   <div className="text-[11px] text-gray-500 font-medium space-y-0.5">
                                       <div>Copertina: {fmt(mat.p)}</div>
-                                      <div>Pagine: {j.bwPages} B/N, {j.colorPages} Col</div>
+                                      <div>Pagine: {j.bwPages} Bianco e Nero, {j.colorPages} Colori</div>
                                       <div>Copie: {j.cps}</div>
                                   </div>
                               </div>
@@ -433,7 +441,7 @@ const App: React.FC = () => {
               <p className="text-gray-400 text-sm">Calcola il costo della tua stampa professionale</p>
             </div>
             <button 
-              onClick={() => { setIsStarted(true); setActiveSections({ covers: true, calc: true, summary: false }); }}
+              onClick={() => { setIsStarted(true); setActiveSections({ covers: true, calc: true, summary: true }); }}
               className="w-full h-16 bg-brandBlue text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 btn-touch shadow-lg shadow-blue-900/20"
             >
               Iniziamo <ArrowRight size={20} />
@@ -448,13 +456,6 @@ const App: React.FC = () => {
                 <p className="text-2xl font-black text-brandBlue">{fmt(total)}</p>
               </div>
             </div>
-            <button 
-                onClick={goToSummary}
-                disabled={tJobs.length === 0}
-                className={`w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all btn-touch shadow-xl ${tJobs.length > 0 ? 'bg-brandBlue text-white shadow-blue-900/20' : 'bg-gray-100 text-gray-300 shadow-none grayscale cursor-not-allowed'}`}
-              >
-                Visualizza Riepilogo <Receipt size={20} />
-              </button>
           </div>
         )}
       </div>
