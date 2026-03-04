@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Analytics } from "@vercel/analytics/react"
 import { 
   Sparkles, Trash2, Loader2, FileScan, 
   Send, Plus, Minus, ChevronDown, ChevronUp, ArrowRight, User, Palette, Receipt, CheckCircle2, X
@@ -56,6 +57,23 @@ const App: React.FC = () => {
     });
     setTotal(tot);
   }, [tJobs]);
+
+  useEffect(() => {
+    const logOpening = async () => {
+      if (!GSHEET_URL) return;
+      try {
+        await fetch(GSHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ azione: "APERTURA", utente: navigator.userAgent })
+        });
+      } catch (e) {
+        console.error("Error logging opening:", e);
+      }
+    };
+    logOpening();
+  }, []);
 
   const handleThesisSelect = (idx: number) => {
     const mat = THESIS_MATS[idx];
@@ -464,6 +482,7 @@ const App: React.FC = () => {
       <div className="pt-8 pb-12 text-center">
         <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.3em]">Sudpen 2024 • Professional Print Solution</p>
       </div>
+      <Analytics />
     </div>
   );
 };
