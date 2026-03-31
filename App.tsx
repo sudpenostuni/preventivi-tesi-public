@@ -180,39 +180,46 @@ const App: React.FC = () => {
         <div className="space-y-4 animate-slide" style={{ animationDelay: '0.1s' }}>
             <div className="bg-white rounded-4xl overflow-hidden card-shadow relative">
               {/* Reel Container */}
-              <div className="h-[60vh] overflow-y-scroll snap-y snap-mandatory scroll-smooth no-scrollbar bg-black p-2 space-y-4">
+              <div className="h-[75vh] overflow-y-scroll snap-y snap-mandatory scroll-smooth no-scrollbar bg-white p-4 space-y-6">
                 {THESIS_MATS.map((m, i) => (
                   <div 
                     key={i} 
-                    className="w-full aspect-[3/4] snap-center snap-always relative flex items-center justify-center bg-gray-900 cursor-pointer rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+                    className="w-full h-full snap-center snap-always flex flex-col bg-white cursor-pointer rounded-3xl overflow-hidden shadow-2xl shrink-0"
                     onClick={() => setSelectedMatIndex(i)}
                   >
-                    <img 
-                      src={m.img} 
-                      alt={m.n} 
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    
-                    {/* Swipe Hint on First Image */}
-                    {i === 0 && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
-                         <motion.div 
-                           initial={{ opacity: 0, y: 20 }}
-                           animate={{ opacity: [0, 1, 0], y: [20, 0, -20] }}
-                           transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                           className="bg-black/50 backdrop-blur px-4 py-2 rounded-full text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2"
-                         >
-                            Swipe <ArrowRight className="-rotate-90" size={14} />
-                         </motion.div>
-                      </div>
-                    )}
+                    <div className="py-5 px-4 flex items-center justify-center bg-white shrink-0">
+                       <h3 className="text-xl font-black uppercase text-gray-900 leading-tight text-center">
+                         {m.n}
+                       </h3>
+                    </div>
 
-                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end p-6">
-                       <div className="w-full">
-                         <p className="text-white font-black uppercase text-lg leading-none mb-1">{m.n}</p>
-                         <p className="text-white/60 font-bold text-xs uppercase tracking-widest">Clicca per dettagli</p>
-                       </div>
+                    <div className="w-full flex-1 relative bg-gray-900 overflow-hidden">
+                      <img 
+                        src={m.img} 
+                        alt={m.n} 
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      
+                      {/* Swipe Hint on First Image */}
+                      {i === 0 && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
+                           <motion.div 
+                             initial={{ opacity: 0, y: 20 }}
+                             animate={{ opacity: [0, 1, 0], y: [20, 0, -20] }}
+                             transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                             className="bg-black/50 backdrop-blur px-4 py-2 rounded-full text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2"
+                           >
+                              Swipe <ArrowRight className="-rotate-90" size={14} />
+                           </motion.div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-5 flex items-center justify-center bg-white shrink-0">
+                       <span className="px-4 py-2 bg-brandBlue/10 text-brandBlue font-bold text-sm rounded-full uppercase tracking-wider">
+                         Prezzo Copertina: {fmt(m.p)}
+                       </span>
                     </div>
                   </div>
                 ))}
