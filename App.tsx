@@ -487,7 +487,7 @@ const App: React.FC = () => {
 
       {/* FOOTER INFO */}
       <div className="pt-8 pb-12 text-center">
-        <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.3em]">Sudpen 2024 • Professional Print Solution</p>
+        <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.3em]">sudpen listino aggiornato a : aprile 2026</p>
       </div>
       <Analytics />
     </div>
