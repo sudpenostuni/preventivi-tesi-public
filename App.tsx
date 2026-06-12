@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { THESIS_MATS, WA_PHONE, LOGO_URL, GSHEET_URL, PRICING } from './data';
+import { CraftsmanshipModal } from './components/CraftsmanshipModal';
 
 const fmt = (v: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(v);
 const safeNum = (v: any) => parseInt(v?.toString() || '0') || 0;
@@ -45,6 +46,7 @@ const App: React.FC = () => {
   const [isStarted, setIsStarted] = useState(false);
   const [activeSections, setActiveSections] = useState({ covers: false, calc: false, summary: true });
   const [selectedMatIndex, setSelectedMatIndex] = useState<number | null>(null);
+  const [showCraftsmanshipModal, setShowCraftsmanshipModal] = useState(false);
   
   const detailsRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -62,11 +64,22 @@ const App: React.FC = () => {
     const logOpening = async () => {
       if (!GSHEET_URL) return;
       try {
+        const payload = {
+          azione: "APERTURA",
+          cliente: "VISITATORE",
+          categoria: "ACCESSO SITO",
+          totale: "0.00",
+          copie: 0,
+          dettagli: "Accesso alla pagina di consultazione/preventivo",
+          dispositivo: navigator.userAgent,
+          risoluzione: `${window.screen.width}x${window.screen.height}`,
+          lingua: navigator.language || 'it'
+        };
         await fetch(GSHEET_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ azione: "APERTURA", utente: navigator.userAgent })
+          body: JSON.stringify(payload)
         });
       } catch (e) {
         console.error("Error logging opening:", e);
@@ -131,23 +144,35 @@ const App: React.FC = () => {
 
   const logToSheet = async () => {
     if (!GSHEET_URL) return;
-    const details = tJobs.map(j => `${j.name} (${j.cps}cp)`).join(', ');
-    const data = {
-      customer: customer.toUpperCase() || 'ANONIMO WEB',
-      category: 'PREVENTIVO TESI',
-      total: total.toFixed(2),
-      itemCount: tJobs.reduce((acc, j) => acc + safeNum(j.cps), 0),
-      platform: `Web App - Dettagli: ${details}` 
+    
+    // Generiamo una descrizione estremamente dettagliata per ciascuna tesi presente
+    const dettagliLavori = tJobs.map((j, idx) => {
+      const mat = THESIS_MATS[j.matIdx];
+      const costoSingolo = calculateJobCost(j);
+      return `Tesi #${idx + 1} (${j.name}) - Copie: ${j.cps} | Pagg. B&N: ${j.bwPages} (${fmt(j.bwPages * PRICING.bw)}) | Pagg. Colori: ${j.colorPages} (${fmt(j.colorPages * PRICING.color.base)}) | Copertina: ${fmt(mat?.p || 30)} (Subtotale tesi: ${fmt(costoSingolo)})`;
+    }).join('; ');
+
+    const payload = {
+      azione: "PREVENTIVO",
+      cliente: customer.toUpperCase() || 'ANONIMO WEB',
+      categoria: 'PREVENTIVO TESI',
+      totale: total.toFixed(2),
+      copie: tJobs.reduce((acc, j) => acc + safeNum(j.cps), 0),
+      dettagli: dettagliLavori,
+      dispositivo: navigator.userAgent,
+      risoluzione: `${window.screen.width}x${window.screen.height}`,
+      lingua: navigator.language || 'it'
     };
+
     try {
       await fetch(GSHEET_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
     } catch (e) {
-      console.error(e);
+      console.error("Error logging to spreadsheet:", e);
     }
   };
 
@@ -465,12 +490,20 @@ const App: React.FC = () => {
               <h1 className="text-3xl font-bold tracking-tight">Preventivo Tesi</h1>
               <p className="text-gray-400 text-sm">Calcola il costo della tua stampa professionale</p>
             </div>
-            <button 
-              onClick={() => { setIsStarted(true); setActiveSections({ covers: true, calc: true, summary: true }); }}
-              className="w-full h-16 bg-brandBlue text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 btn-touch shadow-lg shadow-blue-900/20"
-            >
-              Iniziamo <ArrowRight size={20} />
-            </button>
+            <div className="w-full flex flex-col items-center gap-4">
+              <button 
+                onClick={() => { setIsStarted(true); setActiveSections({ covers: true, calc: true, summary: true }); }}
+                className="w-full h-16 bg-brandBlue text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 btn-touch shadow-lg shadow-blue-900/20"
+              >
+                Iniziamo <ArrowRight size={20} />
+              </button>
+              <button 
+                onClick={() => setShowCraftsmanshipModal(true)}
+                className="text-brandBlue/90 hover:text-brandBlue font-extrabold text-sm tracking-wider uppercase flex items-center gap-2 py-2 transition-colors duration-200"
+              >
+                Scopri di più <Sparkles size={16} className="text-amber-500 fill-amber-500/20 animate-pulse" />
+              </button>
+            </div>
           </div>
         ) : (
           <div className="w-full space-y-6">
@@ -489,6 +522,7 @@ const App: React.FC = () => {
       <div className="pt-8 pb-12 text-center">
         <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.3em]">sudpen listino aggiornato a : aprile 2026</p>
       </div>
+      <CraftsmanshipModal isOpen={showCraftsmanshipModal} onClose={() => setShowCraftsmanshipModal(false)} />
       <Analytics />
     </div>
   );

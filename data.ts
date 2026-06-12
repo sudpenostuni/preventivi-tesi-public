@@ -44,5 +44,5 @@ export const THESIS_MATS = [
 
 export const WA_PHONE = "393917972545";
 export const LOGO_URL = "https://sudpen.weebly.com/uploads/5/1/0/3/51034189/editor/logo-2020.png?1761932030";
-export const GSHEET_URL = "https://script.google.com/macros/s/AKfycbyXS9wv-3EipHNsefh5vIyoIqSUEG9UzZPqmETsROy6sd-d4n1kWP6JVZc4bM6CUXXg/exec";
+export const GSHEET_URL = "https://script.google.com/macros/s/AKfycbwF6i92Gzk_auVGtT7s-8zR4AHR5lRc6MZTweA-R7YB4EDXNR9lCHXD1jxmrgCz8zOf/exec";
 export const PRICING = { bw: 0.05, color: { base: 0.30 } };
