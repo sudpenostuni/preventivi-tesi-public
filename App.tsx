@@ -3,11 +3,115 @@ import { Analytics } from "@vercel/analytics/react"
 import { 
   Sparkles, Trash2, Loader2, FileScan, 
   Send, Plus, Minus, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, ArrowDown, ArrowUp, User, Palette, Receipt, CheckCircle2, X, Info,
-  Lock, Download
+  Lock, Download, BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { THESIS_MATS, WA_PHONE, LOGO_URL, GSHEET_URL, PRICING, USE_GOOGLE_DRIVE, DRIVE_IMAGE_IDS } from './data';
 import { CraftsmanshipModal } from './components/CraftsmanshipModal';
+
+export function getMaterialInfo(name: string) {
+  const n = name.toUpperCase();
+  if (n.includes("SETA")) {
+    return {
+      linea: "Linea Seta",
+      focus: "Il lusso dei riflessi vibranti",
+      desc: "Texture levigata e cangiante, con riflessi cromatici brillanti che donano una lucentezza senza tempo."
+    };
+  }
+  if (n.includes("VINILE")) {
+    return {
+      linea: "Linea Vinile",
+      focus: "Modernità e dinamismo",
+      desc: "Superficie liscia, design pulito e contemporaneo. Versatilità e modernità si fondono in un rivestimento unico."
+    };
+  }
+  if (n.includes("PELLE")) {
+    return {
+      linea: "Linea Effetto Pelle",
+      focus: "L'autorevolezza della tradizione",
+      desc: "Una piacevole sensazione di sostanza. La grana classica evoca un’eleganza istituzionale, per tesi tradizionali."
+    };
+  }
+  if (n.includes("SPALMATO")) {
+    return {
+      linea: "Linea Spalmato",
+      focus: "L'eleganza soft-touch",
+      desc: "Finitura setosa e moderna con un incredibile effetto soft-touch. Ricercata al tatto e perfetta per toni pastello."
+    };
+  }
+  if (n.includes("TELA") || n.includes("CANVAS")) {
+    if (n.includes("ORO GIALLO")) {
+      return {
+        linea: "Linea Seta",
+        focus: "Il lusso dei riflessi vibranti",
+        desc: "Texture levigata e cangiante, con riflessi cromatici brillanti che donano una lucentezza senza tempo."
+      };
+    }
+    return {
+      linea: "Linea Tela",
+      focus: "La sobrietà organica",
+      desc: "Tatto naturale, trama evidente ed intreccio organico delle fibre che richiama le grandi e prestigiose biblioteche."
+    };
+  }
+  if (n.includes("PERLATO")) {
+    return {
+      linea: "Linea Perlato",
+      focus: "Opulenza ed eleganza",
+      desc: "Una selezione sofisticata per riflessi iridescenti profondi. Estetica luminosa, prestigiosa ed unica."
+    };
+  }
+  return {
+    linea: "Linea Pregiata",
+    focus: "Finitura di alta qualità",
+    desc: "Materiale accuratamente selezionato per garantire la massima resa estetica e tattile della tua rilegatura."
+  };
+}
+
+const MaterialDropdown: React.FC<{ materialName: string }> = ({ materialName }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const info = getMaterialInfo(materialName);
+
+  return (
+    <div className="w-full border border-gray-100 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors mt-2 text-left">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        className="w-full flex items-center justify-between px-3.5 py-2 text-xs font-bold text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
+      >
+        <span className="flex items-center gap-1.5 font-black uppercase text-[10px] tracking-wider text-slate-500">
+          <BookOpen size={12} className="text-slate-400" />
+          Info {info.linea}
+        </span>
+        {isOpen ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
+      </button>
+      
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-3.5 pb-3 pt-0.5 space-y-1 text-[11px] text-gray-500 border-t border-gray-100/60 leading-relaxed font-medium">
+              <p className="text-brandBlue font-extrabold uppercase text-[9px] tracking-wider italic">
+                {info.focus}
+              </p>
+              <p className="font-normal text-gray-600 leading-normal">
+                {info.desc}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 
 export const ENGRAVINGS = [
   { 
@@ -1062,6 +1166,8 @@ const App: React.FC = () => {
                            </div>
 
                            <div className="pt-1 pb-4 px-4 flex flex-col gap-3 bg-white shrink-0">
+                              <MaterialDropdown materialName={m.n} />
+
                               <div className="flex justify-center">
                                 <span className="px-3.5 py-1.5 bg-brandBlue/5 text-brandBlue font-extrabold text-xs rounded-full uppercase tracking-wider">
                                   Prezzo Copertina: {fmt(m.p)}
@@ -1150,6 +1256,11 @@ const App: React.FC = () => {
                       </button>
                     </div>
                     
+                    {/* Material Info Dropdown */}
+                    <div className="px-1">
+                      <MaterialDropdown materialName={j.name} />
+                    </div>
+                    
                     {/* Didascalia nera ben visibile */}
                     <div>
                       <p className="text-xs font-extrabold text-gray-900 text-center leading-tight">
@@ -1228,7 +1339,7 @@ const App: React.FC = () => {
                     setIsStarted(false);
                     setCurrentStep(1);
                   }}
-                  className="w-full py-4 border-2 border-dashed border-white/20 hover:border-white/45 text-white/70 hover:text-white rounded-3xl font-extrabold text-xs uppercase flex items-center justify-center gap-2 transition-all cursor-pointer bg-white/5 active:scale-[0.98]"
+                  className="w-full py-4 border-2 border-dashed border-gray-200 hover:border-gray-300 text-gray-600 hover:text-gray-800 rounded-3xl font-extrabold text-xs uppercase flex items-center justify-center gap-2 transition-all cursor-pointer bg-gray-50 hover:bg-gray-100/80 active:scale-[0.98]"
                 >
                   ➕ Aggiungi un'altra tesi / copertina
                 </button>
@@ -1254,14 +1365,14 @@ const App: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="bg-white/5 border border-white/10 rounded-4xl p-10 text-center space-y-4">
-                <p className="text-white/40 text-sm font-medium italic">Nessuna copertina nel preventivo. Torna alla schermata iniziale per sceglierne una.</p>
+              <div className="bg-gray-50 border border-gray-150 rounded-4xl p-10 text-center space-y-4">
+                <p className="text-gray-500 text-sm font-medium italic">Nessuna copertina nel preventivo. Torna alla schermata iniziale per sceglierne una.</p>
                 <button 
                   onClick={() => {
                     setDirection('down');
                     setIsStarted(false);
                   }}
-                  className="mx-auto block bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition-all cursor-pointer border border-white/10 active:scale-[0.98]"
+                  className="mx-auto block bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition-all cursor-pointer border border-gray-200 active:scale-[0.98]"
                 >
                   ↩ Scegli Copertina
                 </button>
@@ -1392,7 +1503,7 @@ const App: React.FC = () => {
 
       {/* FOOTER INFO */}
       <div className="pt-8 pb-12 text-center">
-        <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.3em]">sudpen listino aggiornato a : aprile 2026</p>
+        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.3em]">sudpen listino aggiornato a : aprile 2026</p>
       </div>
       <CraftsmanshipModal isOpen={showCraftsmanshipModal} onClose={() => setShowCraftsmanshipModal(false)} />
       
