@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Analytics } from "@vercel/analytics/react"
 import { 
   Sparkles, Trash2, Loader2, FileScan, 
-  Send, Plus, Minus, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, User, Palette, Receipt, CheckCircle2, X
+  Send, Plus, Minus, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, ArrowDown, ArrowUp, User, Palette, Receipt, CheckCircle2, X, Info,
+  Lock, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { THESIS_MATS, WA_PHONE, LOGO_URL, GSHEET_URL, PRICING, USE_GOOGLE_DRIVE, DRIVE_IMAGE_IDS } from './data';
@@ -416,48 +417,33 @@ interface Job {
   engravingColor?: string;
 }
 
-const DRIVE_FILES = [
-  "1NzMPILRqejS72BrWCNmTd9U_EdwhDPXJ",
-  "1dPSmDdZgBamtGo6kF5rwJGnmF9P8JGRu",
-  "18g18BkdXJffLpoBXgchkaN0P2vIEuUIr",
-  "1a2nduEHKppdaJtYCIBJAeO-9amEPzaoz",
-  "1hifQmyFeRx7COH9powFJ42ZuVcRsLq3Z",
-  "1ykZRxGwr84pDYGgM90LMve_K_dc1U80I",
-  "1ewggZsRJc8AW4SGQMEQHoUOjZ6xNu17k",
-  "1_44fZkwNu4K2f-Ll4rUSt2VC9gjArwKp",
-  "1OTXJPRK2ZCjNDMF_WuQ7YnSx0sY9fTkD",
-  "1NVoz3ESrSaxhmlFC1uYw9b3Jfm_LiIiJ",
-  "1k2QQxwER29Vd4ITwb_u1mid5nw1I4M6l",
-  "1X8U6C9zT4LXUwmag3JnQtopy6tKFj73o",
-  "1VN2Vxlo4moNpRdLS-txi9a_SUC0dJxHt",
-  "1E67nFkbR0M7oerPlFfPqfLF0aFQi6yE2",
-  "1Ak235jXY5inHbh_g5kENYQ4Llawno_x3",
-  "1lJMikMkYy4Z4T7riq88TaeXthl_PCfRa",
-  "1UTRa4pMqYQ0ngXN3C8o7F_ZtcKzVaTCx",
-  "11ztNyTFOtKM_CL1W-3kysTj7YPtgDpoG",
-  "1UDUe04-hvsqDqKVy8ZfyMceUvSO2haqw",
-  "1d5MbekrN10zLk9vNHKmR-hS_otPyOhyn",
-  "1LVSOXG2KSkr30m1mQ1QbSYwBD9Oez7LD",
-  "1h4XVHMzd3mElnylBzhVYyupSMT2j8x4S",
-  "1430751nlr4uk1HJfxCI6O3Mi3L0GBzDe",
-  "16SBiVtwHMk2xmAj41fWWDMw5nGPrh1TF",
-  "1y7B2bzt0e8RBMicsMRtOnNS-gTq4UdkE",
-  "1xOXWm436pnQ2o5glR7WIdAuS3p8aGEo3",
-  "1VQEdU6kiNiHMsnGaYreQIcHkMPHbMrdt",
-  "1BaaEh7JpxTkM-bxZ-CFvOfQv0f5UwdOm",
-  "1542bES9oDQva8ZO7N37GpX-ypszS1qlp",
-  "1uspDjoh9O5GwXoEhO92scsaeIIPWWMMP",
-  "1FhxphBXocf4dJQC45xMBzDqq6xftDb7N",
-  "1s8ct69skGFllCuPk0GWo0KMG9fUBXjzZ",
-  "1hslF54wyVPmfKUF6k7TZ3eTL4WdwbfJk",
-  "1YFcuRj6QvMPuHiEpnoYYt1-4Iho7DIkX",
-  "1XpoKUOnnVEN_-0ovZEYqjPXhUllwwRdl",
-  "1xJM0kxxBzw6VCzFrnTzXZvVX9z3cXG3e",
-  "1GXJXqzj-q9vs_Ri2W90PxVhmRX3FlpVE",
-  "1S36XFjYUx449qKhzjD9RL5FNAcKbkMXo",
-  "1WSaH45EvTb1ZdLabzLxSvcIGpN5TVk8W",
-  "10zGkGncN5wi8ldtbBXz8mGLPv0KFVfhW"
-];
+const slideVariants = {
+  initial: (direction: 'up' | 'down') => ({
+    y: direction === 'up' ? 120 : -120,
+    opacity: 0,
+    scale: 0.98,
+  }),
+  animate: {
+    y: 0,
+    opacity: 1,
+    scale: 1,
+    transition: {
+      y: { type: "spring", stiffness: 320, damping: 28 },
+      opacity: { duration: 0.25 },
+      scale: { duration: 0.25 }
+    }
+  },
+  exit: (direction: 'up' | 'down') => ({
+    y: direction === 'up' ? -120 : 120,
+    opacity: 0,
+    scale: 0.98,
+    transition: {
+      y: { type: "spring", stiffness: 320, damping: 28 },
+      opacity: { duration: 0.2 },
+      scale: { duration: 0.2 }
+    }
+  })
+};
 
 const App: React.FC = () => {
   const [tJobs, setTJobs] = useState<Job[]>([]);
@@ -465,169 +451,13 @@ const App: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [isStarted, setIsStarted] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [direction, setDirection] = useState<'up' | 'down'>('up');
   const [activeSections, setActiveSections] = useState({ covers: false, calc: false, summary: true });
   const [selectedMatIndex, setSelectedMatIndex] = useState<number | null>(null);
   const [showCraftsmanshipModal, setShowCraftsmanshipModal] = useState(false);
   const [activeEngravings, setActiveEngravings] = useState<Record<number, string>>({});
-  const [showAligner, setShowAligner] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [manualMatches, setManualMatches] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('drive_manual_matches_v2');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    const initial: Record<string, string> = {};
-    Object.entries(DRIVE_IMAGE_IDS).forEach(([matName, driveId]) => {
-      initial[matName] = driveId;
-    });
-    return initial;
-  });
-
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('drive_api_key') || '');
-  const [isLoadingNames, setIsLoadingNames] = useState(false);
-  const [fetchedFileNames, setFetchedFileNames] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('drive_fetched_file_names');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return {};
-  });
-  const [pasteInput, setPasteInput] = useState('');
-  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem('drive_api_key', apiKey);
-  }, [apiKey]);
-
-  useEffect(() => {
-    localStorage.setItem('drive_fetched_file_names', JSON.stringify(fetchedFileNames));
-  }, [fetchedFileNames]);
-
-  const handleAutoAlignWithNames = (namesMap: Record<string, string>) => {
-    const updatedMatches = { ...manualMatches };
-    let alignedCount = 0;
-
-    THESIS_MATS.forEach(m => {
-      // Trova se esiste un file di Drive con nome simile al nome del materiale
-      const foundId = Object.keys(namesMap).find(driveId => {
-        const driveFileName = namesMap[driveId];
-        if (!driveFileName) return false;
-
-        const cleanMat = m.n.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const cleanFile = driveFileName.toLowerCase()
-          .replace(/\.(jpg|jpeg|png|webp|gif|bmp)/gi, '')
-          .replace(/[^a-z0-9]/g, '');
-
-        return cleanMat === cleanFile || cleanMat.includes(cleanFile) || cleanFile.includes(cleanMat);
-      });
-
-      if (foundId) {
-        updatedMatches[m.n] = foundId;
-        alignedCount++;
-      }
-    });
-
-    setManualMatches(updatedMatches);
-    return alignedCount;
-  };
-
-  const handleParseAndApplyPastedList = (text: string) => {
-    if (!text.trim()) {
-      setToastMessage({ type: 'error', text: 'Per favore, inserisci del testo da analizzare.' });
-      return;
-    }
-
-    const lines = text.split('\n');
-    const tempNames = { ...fetchedFileNames };
-    let parsedCount = 0;
-
-    lines.forEach(line => {
-      const driveIdRegex = /1[a-zA-Z0-9_-]{32}/;
-      const match = line.match(driveIdRegex);
-      if (match) {
-        const driveId = match[0];
-        let fileName = line
-          .replace(driveId, '')
-          .replace(/https:\/\/drive\.google\.com\/[^\s]*/g, '')
-          .replace(/[\/?:=,;_➔>\t()\"\'\[\]-]/g, ' ')
-          .replace(/\.(jpg|jpeg|png|webp|gif|bmp)/gi, '')
-          .trim();
-
-        if (fileName) {
-          tempNames[driveId] = fileName;
-          parsedCount++;
-        }
-      }
-    });
-
-    if (parsedCount > 0) {
-      setFetchedFileNames(tempNames);
-      const alignedCount = handleAutoAlignWithNames(tempNames);
-      setToastMessage({
-        type: 'success',
-        text: `Trovati e importati ${parsedCount} file di Drive! Di questi, ${alignedCount} materiali sono stati allineati automaticamente.`
-      });
-      setPasteInput('');
-    } else {
-      setToastMessage({
-        type: 'error',
-        text: 'Nessun ID di Drive valido con nome file trovato nel testo inserito. Assicurati che ogni riga contenga un ID di 33 caratteri e il relativo nome.'
-      });
-    }
-  };
-
-  const handleFetchNamesWithApiKey = async () => {
-    if (!apiKey.trim()) {
-      setToastMessage({ type: 'error', text: 'Per favore, inserisci una chiave API di Google valida.' });
-      return;
-    }
-
-    setIsLoadingNames(true);
-    setToastMessage({ type: 'info', text: 'Recupero dei nomi dei file da Google Drive in corso...' });
-    const tempNames = { ...fetchedFileNames };
-    let successCount = 0;
-
-    await Promise.all(
-      DRIVE_FILES.map(async (driveId) => {
-        try {
-          const res = await fetch(`https://www.googleapis.com/drive/v3/files/${driveId}?key=${apiKey.trim()}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.name) {
-              tempNames[driveId] = data.name;
-              successCount++;
-            }
-          }
-        } catch (e) {
-          console.error("Errore fetch nome per", driveId, e);
-        }
-      })
-    );
-
-    setFetchedFileNames(tempNames);
-    setIsLoadingNames(false);
-
-    if (successCount > 0) {
-      const alignedCount = handleAutoAlignWithNames(tempNames);
-      setToastMessage({
-        type: 'success',
-        text: `Nomi recuperati da Drive: ${successCount}/40! Allineati automaticamente ${alignedCount} materiali.`
-      });
-    } else {
-      setToastMessage({
-        type: 'error',
-        text: 'Errore nel recupero. Verifica che la Chiave API sia corretta e che i file di Drive siano condivisi come "Chiunque abbia il link".'
-      });
-    }
-  };
-
-  useEffect(() => {
-    localStorage.setItem('drive_manual_matches_v2', JSON.stringify(manualMatches));
-  }, [manualMatches]);
+  const [introUnlocked, setIntroUnlocked] = useState(false);
   
   const modalEngravingId = selectedMatIndex !== null 
     ? (() => {
@@ -653,6 +483,23 @@ const App: React.FC = () => {
     });
     setTotal(tot);
   }, [tJobs]);
+
+  useEffect(() => {
+    if (isStarted) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (introUnlocked) {
+      setTimeout(() => {
+        const el = document.getElementById('startup-carousel');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 120);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [isStarted, currentStep, introUnlocked]);
 
   useEffect(() => {
     const logOpening = async () => {
@@ -698,6 +545,9 @@ const App: React.FC = () => {
       matIdx: idx,
       engravingColor: chosenEngraving 
     }]);
+    setDirection('up');
+    setIsStarted(true);
+    setCurrentStep(1);
     setActiveSections(prev => ({ ...prev, calc: true }));
     setSelectedMatIndex(null);
     
@@ -784,21 +634,217 @@ const App: React.FC = () => {
     }
   };
 
-  const sendWa = () => {
+  const [showSavedToast, setShowSavedToast] = useState(false);
+
+  const saveReceiptPng = () => {
     logToSheet();
-    let txt = `*PREVENTIVO TESI SUDPEN*\n`;
-    txt += `------------------------------\n`;
-    txt += `Cliente: ${customer.toUpperCase() || 'N/D'}\n`;
-    tJobs.forEach((j) => {
-      const engravingLabel = ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante'))?.name || 'ORO brillante';
-      txt += `\ncopertina selezionata : ${j.name.toUpperCase()}\n`;
-      txt += `Incisione: ${engravingLabel.toUpperCase()}\n`;
-      txt += `copie : ${j.cps}\n`;
-      txt += `Pagine Bianco e nero: ${j.bwPages}\n`;
-      txt += `Pagine colori : ${j.colorPages}\n`;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Configurazione dimensioni del volantino/scontrino
+    const width = 750;
+    const headerHeight = 310;
+    const itemHeight = 170;
+    const footerHeight = 240;
+    const height = headerHeight + (tJobs.length * itemHeight) + footerHeight;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    // Sfondo carta premium - leggermente avorio/grigio chiaro caldissimo
+    ctx.fillStyle = '#FAF9F6';
+    ctx.fillRect(0, 0, width, height);
+
+    // Bordo decorativo esterno doppio
+    ctx.strokeStyle = '#E2E8F0';
+    ctx.lineWidth = 12;
+    ctx.strokeRect(6, 6, width - 12, height - 12);
+
+    ctx.strokeStyle = '#D1D5DB';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(20, 20, width - 40, height - 40);
+
+    // --- SEZIONE INTESTAZIONE (HEADER) ---
+    // Logo Circolare Elegante
+    const logoX = width / 2;
+    const logoY = 90;
+    const logoRadius = 38;
+    ctx.beginPath();
+    ctx.arc(logoX, logoY, logoRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = '#111827'; // Dark slate/nero elegante
+    ctx.fill();
+
+    // Iniziali "SP" inside logo
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('SP', logoX, logoY + 2);
+
+    // Nome Brand
+    ctx.font = 'black 32px sans-serif';
+    ctx.fillStyle = '#111827';
+    ctx.fillText('SUDPEN', width / 2, 175);
+
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = '#6B7280';
+    ctx.fillText('STAMPA E RILEGATURA TESI D\'ECCELLENZA', width / 2, 202);
+
+    // Linea tratteggiata di separazione superiore
+    ctx.beginPath();
+    ctx.setLineDash([8, 6]);
+    ctx.moveTo(40, 225);
+    ctx.lineTo(width - 40, 225);
+    ctx.strokeStyle = '#9CA3AF';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.setLineDash([]); // Ripristina linea continua
+
+    // Dettagli Ordine
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 15px monospace';
+    ctx.fillStyle = '#4B5563';
+    const dataCorrente = new Date().toLocaleString('it-IT', { 
+      day: '2-digit', month: '2-digit', year: 'numeric', 
+      hour: '2-digit', minute: '2-digit' 
     });
-    txt += `\n*TOTALE : ${fmt(total)}*`;
-    window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(txt)}`, '_blank');
+    ctx.fillText(`DATA: ${dataCorrente}`, 50, 260);
+    
+    const codiceOrdine = `TESI-${Math.floor(100000 + Math.random() * 900000)}`;
+    ctx.fillText(`PREVENTIVO: ${codiceOrdine}`, 50, 285);
+
+    ctx.textAlign = 'right';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillStyle = '#111827';
+    ctx.fillText(`CLIENTE: ${customer.toUpperCase()}`, width - 50, 260);
+    
+    ctx.font = 'italic 12px monospace';
+    ctx.fillStyle = '#6B7280';
+    ctx.fillText('Riepilogo preventivo non fiscale', width - 50, 285);
+
+    // Linea solida prima degli articoli
+    ctx.beginPath();
+    ctx.moveTo(40, 310);
+    ctx.lineTo(width - 40, 310);
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // --- SEZIONE ARTICOLI (ITEMS) ---
+    let currentY = 345;
+    tJobs.forEach((j, idx) => {
+      const mat = THESIS_MATS[j.matIdx];
+      const engravingLabel = ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante'))?.name || 'ORO brillante';
+      const costoArticolo = calculateJobCost(j);
+
+      // Titolo Tesi a sinistra
+      ctx.textAlign = 'left';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillStyle = '#1E3A8A'; // Deep Navy Blue
+      ctx.fillText(`#${idx + 1} TESI: ${j.name.toUpperCase()}`, 50, currentY);
+
+      // Prezzo a destra
+      ctx.textAlign = 'right';
+      ctx.font = 'bold 21px sans-serif';
+      ctx.fillStyle = '#111827';
+      ctx.fillText(fmt(costoArticolo), width - 50, currentY);
+
+      // Dettagli a sinistra
+      ctx.textAlign = 'left';
+      ctx.font = '15px sans-serif';
+      ctx.fillStyle = '#374151';
+      ctx.fillText(`• Incisione: ${engravingLabel.toUpperCase()}`, 65, currentY + 32);
+      ctx.fillText(`• Copie: ${j.cps} pz  |  Pagine B&N: ${j.bwPages}  |  Pagine Colori: ${j.colorPages}`, 65, currentY + 58);
+
+      // Composizione prezzo
+      ctx.font = 'italic 12.5px sans-serif';
+      ctx.fillStyle = '#6B7280';
+      const prezzoBase = mat?.p || 30;
+      const costoBw = j.bwPages * PRICING.bw;
+      const costoColore = j.colorPages * PRICING.color.base;
+      ctx.fillText(`[Copia singola: Copertina ${fmt(prezzoBase)} + Stampato B&N ${fmt(costoBw)} + Stampato Colori ${fmt(costoColore)}]`, 65, currentY + 82);
+
+      // Separatore tratteggiato tra articoli
+      if (idx < tJobs.length - 1) {
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(50, currentY + 110);
+        ctx.lineTo(width - 50, currentY + 110);
+        ctx.strokeStyle = '#D1D5DB';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      currentY += itemHeight;
+    });
+
+    // Spazio prima del totale
+    currentY += 10;
+
+    // Linea solida prima del totale
+    ctx.beginPath();
+    ctx.moveTo(40, currentY);
+    ctx.lineTo(width - 40, currentY);
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    currentY += 45;
+
+    // --- SEZIONE TOTALI ---
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillStyle = '#374151';
+    const totalCopies = tJobs.reduce((acc, j) => acc + safeNum(j.cps), 0);
+    ctx.fillText(`COPIE TOTALI: ${totalCopies}`, 50, currentY);
+
+    ctx.textAlign = 'right';
+    ctx.font = 'black 32px sans-serif';
+    ctx.fillStyle = '#059669'; // Emerald Green
+    ctx.fillText(`TOTALE COMPLESSIVO: ${fmt(total)}`, width - 50, currentY + 5);
+
+    ctx.textAlign = 'left';
+    ctx.font = 'italic 12px sans-serif';
+    ctx.fillStyle = '#6B7280';
+    ctx.fillText('Prezzi comprensivi di IVA e rilegatura professionale tesi.', 50, currentY + 32);
+
+    // --- SEZIONE FOOTER ---
+    currentY += 100;
+    
+    // Linea ondulata o tratteggiata finale
+    ctx.beginPath();
+    ctx.setLineDash([6, 4]);
+    ctx.moveTo(120, currentY);
+    ctx.lineTo(width - 120, currentY);
+    ctx.strokeStyle = '#9CA3AF';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    currentY += 35;
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillStyle = '#1E3A8A';
+    ctx.fillText('GRAZIE PER AVER SCELTO SUDPEN!', width / 2, currentY);
+
+    ctx.font = 'italic 13.5px sans-serif';
+    ctx.fillStyle = '#4B5563';
+    ctx.fillText('Salva questa ricevuta in galleria e mostrala in sede per procedere con la stampa.', width / 2, currentY + 26);
+
+    // Download dell'immagine in PNG
+    const link = document.createElement('a');
+    link.download = `SUDPEN_RICEVUTA_${customer.toUpperCase().replace(/\s+/g, '_') || 'TESI'}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    // Mostra un feedback all'utente
+    setShowSavedToast(true);
+    setTimeout(() => {
+      setShowSavedToast(false);
+    }, 4000);
   };
 
   const calculateJobCost = (j: Job) => {
@@ -806,111 +852,12 @@ const App: React.FC = () => {
       const cost = ((safeNum(j.bwPages) * PRICING.bw) + (safeNum(j.colorPages) * PRICING.color.base) + (mat?.p || 30)) * safeNum(j.cps);
       return cost;
   }
-
   return (
     <div className="max-w-md mx-auto min-h-screen flex flex-col p-6 space-y-6">
       
-      {/* 1. REEL COPERTINE (Sempre visibile) */}
-      {isStarted && (
-        <div className="space-y-2 animate-slide" style={{ animationDelay: '0.1s' }}>
-            <div className="px-1 text-white/80 text-xs font-black uppercase tracking-widest mb-1 flex items-center justify-between">
-              <span>Sfoglia le Copertine</span>
-              <span className="text-[10px] font-medium opacity-60 normal-case">Scorri di lato →</span>
-            </div>
-            {/* Reel Container */}
-            <div className="overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar -mx-6 px-6 py-3 flex flex-row gap-5">
-              {THESIS_MATS.map((m, i) => {
-                const allowedFoilOptions = getAllowedEngravingsForMat(m.n);
-                const engravingId = activeEngravings[i] && allowedFoilOptions.some(x => x.id === activeEngravings[i])
-                  ? activeEngravings[i]
-                  : allowedFoilOptions[0]?.id || 'oro_brillante';
-                const currentFoil = ENGRAVINGS.find(e => e.id === engravingId) || ENGRAVINGS[0];
-
-                return (
-                  <motion.div 
-                    key={i} 
-                    className="w-[82vw] max-w-[310px] snap-center snap-always flex flex-col bg-white cursor-pointer rounded-3xl overflow-hidden shadow-xl border border-gray-100 shrink-0"
-                    onClick={() => setSelectedMatIndex(i)}
-                    animate={i === 0 ? {
-                      x: [0, -35, 10, 0]
-                    } : { x: 0 }}
-                    transition={i === 0 ? {
-                      delay: 2,
-                      duration: 1.2,
-                      ease: "easeInOut"
-                    } : {}}
-                  >
-                    <div className="w-full aspect-[3/4] relative bg-gray-900 overflow-hidden shrink-0">
-                      <img 
-                        src={m.img} 
-                        alt={m.n} 
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      
-                      {/* Dynamic engraving overlay */}
-                      <ThesisCoverOverlay foil={currentFoil} candidateName={customer} />
-
-                      {/* Swipe Hint on First Image */}
-                      {i === 0 && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
-                           <motion.div 
-                             initial={{ opacity: 0, x: 20 }}
-                             animate={{ opacity: [0, 1, 0], x: [20, 0, -20] }}
-                             transition={{ delay: 2, duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                             className="bg-black/50 backdrop-blur px-4 py-2 rounded-full text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2"
-                           >
-                              Swipe <ArrowLeft size={14} />
-                           </motion.div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Swatch Selectors for Engraving (SOPRA prezzo copertina) */}
-                    <div className="pt-3 pb-2 flex flex-col items-center justify-center space-y-1.5 bg-white shrink-0">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                        Incisione: <span className="font-extrabold text-black">{currentFoil.name}</span>
-                      </span>
-                      <div className="flex gap-1.5 items-center">
-                        {allowedFoilOptions.map((e) => {
-                          const isSelected = engravingId === e.id;
-                          return (
-                            <button
-                              key={e.id}
-                              type="button"
-                              onClick={(ev) => {
-                                ev.stopPropagation(); // Evita l'apertura della modale
-                                setActiveEngravings(prev => ({ ...prev, [i]: e.id }));
-                              }}
-                              className={`w-6 h-6 rounded-full border transition-all active:scale-90 ${
-                                isSelected 
-                                  ? 'border-brandBlue scale-110 shadow-sm shadow-brandBlue/35' 
-                                  : 'border-transparent hover:border-gray-300 hover:scale-105'
-                              } p-[2px] bg-white`}
-                              title={e.name}
-                            >
-                              <div className={`w-full h-full rounded-full ${e.bgClass}`} />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="pt-1 pb-4 flex items-center justify-center bg-white shrink-0">
-                       <span className="px-3.5 py-1.5 bg-brandBlue/5 text-brandBlue font-extrabold text-xs rounded-full uppercase tracking-wider">
-                         Prezzo Copertina: {fmt(m.p)}
-                       </span>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-        </div>
-      )}
-
       {/* Selected Material Modal */}
       <AnimatePresence>
-        {selectedMatIndex !== null && (
+        {false && (
           <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -979,22 +926,202 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-      {/* 2. DETTAGLI STAMPA */}
-      {isStarted && (
-        <div ref={detailsRef} className="space-y-4 animate-slide" style={{ animationDelay: '0.2s' }}>
-          <button 
-            onClick={() => setActiveSections(p => ({...p, calc: !p.calc}))}
-            className="w-full bg-white/10 text-white p-5 rounded-3xl flex items-center justify-between border border-white/20 backdrop-blur-sm btn-touch"
+      {/* 2. CONFIGURATORE STEP-BY-STEP */}
+      <AnimatePresence mode="wait" custom={direction} initial={false}>
+        {!isStarted && (
+          <motion.div
+            key="screen-covers"
+            custom={direction}
+            variants={slideVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="space-y-6"
           >
-            <div className="flex items-center gap-3">
-              <FileScan size={20} />
-              <span className="font-bold uppercase tracking-tight text-sm">Dettagli Stampa</span>
-            </div>
-            {activeSections.calc ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </button>
-          <div className={`section-transition ${activeSections.calc ? 'section-open' : 'section-closed'}`}>
+             {/* 4. SCHERMATA DI AVVIO / CONFIGURATORE */}
+             <div className="bg-white rounded-4xl p-10 card-shadow flex flex-col items-center animate-slide">
+                <div className="w-full flex flex-col items-center gap-10">
+                  <img src={LOGO_URL} className="h-32 w-auto opacity-100" alt="Sudpen" />
+                  <div className="text-center space-y-2">
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">Preventivo Tesi</h1>
+                    <p className="text-gray-400 text-sm font-medium">Calcola il costo della tua tesi in 1 minuto.</p>
+                  </div>
+                  <div className="w-full flex flex-col items-center gap-4">
+                    <button 
+                      onClick={() => setShowCraftsmanshipModal(true)}
+                      className="text-gray-500 hover:text-gray-700 font-extrabold text-sm tracking-wider uppercase flex items-center gap-2 py-2 transition-colors duration-200 cursor-pointer"
+                    >
+                      Scopri di più <Info size={16} className="text-gray-400" />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setIntroUnlocked(true);
+                        setTimeout(() => {
+                          const el = document.getElementById('startup-carousel');
+                          if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
+                        }, 150);
+                      }}
+                      className="relative overflow-hidden w-full h-16 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 btn-touch shadow-lg shadow-emerald-900/20 cursor-pointer"
+                    >
+                      {/* Shimmer effect */}
+                      <motion.div
+                        className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 pointer-events-none"
+                        initial={{ x: '-100%' }}
+                        animate={{ x: '100%' }}
+                        transition={{ repeat: Infinity, duration: 1.8, ease: 'linear', repeatDelay: 1 }}
+                      />
+                      <span className="relative z-10 flex items-center gap-3">
+                        Iniziamo <ArrowDown size={20} />
+                      </span>
+                    </button>
+                  </div>
+                </div>
+             </div>
+
+             {/* Carosello Scelta Copertine */}
+             {introUnlocked && (
+               <div id="startup-carousel" className="space-y-2 animate-slide" style={{ animationDelay: '0.1s' }}>
+                   {/* Reel Container */}
+                   <div className="overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar -mx-6 px-6 py-3 flex flex-row gap-5">
+                     {THESIS_MATS.map((m, i) => {
+                       const allowedFoilOptions = getAllowedEngravingsForMat(m.n);
+                       const engravingId = activeEngravings[i] && allowedFoilOptions.some(x => x.id === activeEngravings[i])
+                         ? activeEngravings[i]
+                         : allowedFoilOptions[0]?.id || 'oro_brillante';
+                       const currentFoil = ENGRAVINGS.find(e => e.id === engravingId) || ENGRAVINGS[0];
+
+                       return (
+                         <motion.div 
+                           key={i} 
+                           className="w-[82vw] max-w-[310px] snap-center snap-always flex flex-col bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 shrink-0 cursor-default"
+                           animate={i === 0 ? {
+                             x: [0, -35, 10, 0]
+                           } : { x: 0 }}
+                           transition={i === 0 ? {
+                             delay: 2,
+                             duration: 1.2,
+                             ease: "easeInOut"
+                           } : {}}
+                         >
+                           <div className="w-full aspect-[3/4] relative bg-gray-900 overflow-hidden shrink-0">
+                             <img 
+                               src={m.img} 
+                               alt={m.n} 
+                               className="w-full h-full object-cover"
+                               loading="lazy"
+                             />
+                             
+                             {/* Dynamic engraving overlay */}
+                             <ThesisCoverOverlay foil={currentFoil} candidateName={customer} />
+
+                             {/* Swipe Hint on First Image */}
+                             {i === 0 && (
+                               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
+                                  <motion.div 
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: [0, 1, 0], x: [20, 0, -20] }}
+                                    transition={{ delay: 2, duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                                    className="bg-black/50 backdrop-blur px-4 py-2 rounded-full text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2"
+                                  >
+                                     Swipe <ArrowLeft size={14} />
+                                  </motion.div>
+                               </div>
+                             )}
+                           </div>
+
+                           {/* Swatch Selectors for Engraving */}
+                           <div className="pt-3 pb-2 flex flex-col items-center justify-center space-y-1.5 bg-white shrink-0">
+                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                               Incisione: <span className="font-extrabold text-black">{currentFoil.name}</span>
+                             </span>
+                             <div className="flex gap-1.5 items-center">
+                               {allowedFoilOptions.map((e) => {
+                                 const isSelected = engravingId === e.id;
+                                 return (
+                                   <button
+                                     key={e.id}
+                                     type="button"
+                                     onClick={(ev) => {
+                                       ev.stopPropagation(); // Evita l'apertura della modale
+                                       setActiveEngravings(prev => ({ ...prev, [i]: e.id }));
+                                     }}
+                                     className={`w-6 h-6 rounded-full border transition-all active:scale-90 ${
+                                       isSelected 
+                                         ? 'border-brandBlue scale-110 shadow-sm shadow-brandBlue/35' 
+                                         : 'border-transparent hover:border-gray-300 hover:scale-105'
+                                     } p-[2px] bg-white cursor-pointer`}
+                                     title={e.name}
+                                   >
+                                     <div className={`w-full h-full rounded-full ${e.bgClass}`} />
+                                   </button>
+                                 );
+                               })}
+                             </div>
+                           </div>
+
+                           <div className="pt-1 pb-4 px-4 flex flex-col gap-3 bg-white shrink-0">
+                              <div className="flex justify-center">
+                                <span className="px-3.5 py-1.5 bg-brandBlue/5 text-brandBlue font-extrabold text-xs rounded-full uppercase tracking-wider">
+                                  Prezzo Copertina: {fmt(m.p)}
+                                </span>
+                              </div>
+                              
+                              <button
+                                type="button"
+                                onClick={(ev) => {
+                                  ev.stopPropagation();
+                                  handleThesisSelect(i);
+                                }}
+                                className="relative overflow-hidden w-full h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs uppercase rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                              >
+                                {/* Shimmer effect */}
+                                <motion.div
+                                  className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/35 to-transparent -skew-x-12 pointer-events-none"
+                                  initial={{ x: '-100%' }}
+                                  animate={{ x: '100%' }}
+                                  transition={{ repeat: Infinity, duration: 1.8, ease: 'linear', repeatDelay: 1 }}
+                                />
+                                <span className="relative z-10 flex items-center gap-1.5">
+                                  Scegli soluzione <ArrowDown size={14} />
+                                </span>
+                              </button>
+                           </div>
+                         </motion.div>
+                       );
+                     })}
+                   </div>
+               </div>
+             )}
+          </motion.div>
+        )}
+
+        {/* STEP 1: CONFIGURAZIONE PAGINE & COPIE */}
+        {isStarted && currentStep === 1 && (
+          <motion.div
+            key="screen-step1"
+            custom={direction}
+            variants={slideVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            ref={detailsRef}
+            className="space-y-6"
+          >
+            {/* Tasto Sali in cima */}
+            <button
+              onClick={() => {
+                setDirection('down');
+                setIsStarted(false);
+                setCurrentStep(1);
+              }}
+              className="w-full h-11 bg-slate-200/90 hover:bg-slate-300 text-slate-700 font-extrabold text-xs uppercase rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-slate-300/60 shadow-sm cursor-pointer"
+            >
+              <ArrowUp size={16} className="animate-bounce" /> Sali (Cambia Copertina)
+            </button>
             {tJobs.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {tJobs.map(j => (
                   <div key={j.id} className="bg-white rounded-4xl p-6 card-shadow space-y-6 border border-gray-100">
                     <div className="flex justify-between items-center border-b pb-4">
@@ -1005,78 +1132,42 @@ const App: React.FC = () => {
                         <div>
                           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Copertina:</p>
                           <span className="font-black text-sm uppercase text-brandBlue">{j.name}</span>
+                          
+                          {/* Incisione scelta */}
+                          <div className="flex items-center gap-1.5 mt-1 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 w-fit">
+                            <span className="text-[9px] font-extrabold text-gray-400 uppercase">Incisione scelta:</span>
+                            <div className="flex items-center gap-1">
+                              <div className={`w-2.5 h-2.5 rounded-full ${ENGRAVINGS.find(e => e.id === j.engravingColor)?.bgClass || 'bg-gradient-to-br from-[#FFE89C] via-[#D4AF37] to-[#9E7815]'} shadow-inner`} />
+                              <span className="text-[9px] font-black uppercase text-gray-700">
+                                {ENGRAVINGS.find(e => e.id === j.engravingColor)?.name || 'ORO brillante'}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <button onClick={() => setTJobs(p => p.filter(x => x.id !== j.id))} className="text-gray-300 p-1 hover:text-red-400 transition-colors">
+                      <button onClick={() => setTJobs(p => p.filter(x => x.id !== j.id))} className="text-gray-300 p-1 hover:text-red-400 transition-colors cursor-pointer">
                         <Trash2 size={18} />
                       </button>
                     </div>
                     
                     {/* Didascalia nera ben visibile */}
-                    <div className="pb-4">
-                      <p className="text-xs font-bold text-gray-900 text-center leading-tight">
-                        Inserisci il numero di pagine manualmente o carica il tuo file per analisi automatica.
+                    <div>
+                      <p className="text-xs font-extrabold text-gray-900 text-center leading-tight">
+                        Inserisci il numero di pagine della tesi o carica il tuo file PDF per l'analisi automatica.
                       </p>
                     </div>
 
-                    {/* Campi di input SPOSTATI IN ALTO */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Bianco e Nero</label>
-                        <NumIn v={j.bwPages} onChange={v => setTJobs(p => p.map(x => x.id === j.id ? {...x, bwPages: v as number} : x))} />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Colori</label>
-                        <NumIn v={j.colorPages} onChange={v => setTJobs(p => p.map(x => x.id === j.id ? {...x, colorPages: v as number} : x))} />
-                      </div>
-                      <div className="col-span-2 space-y-1.5 pt-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Numero di Copie</label>
-                        <NumIn v={j.cps} min={1} onChange={v => setTJobs(p => p.map(x => x.id === j.id ? {...x, cps: v as number} : x))} />
-                      </div>
-                    </div>
-                    
-                    {/* Scelta colore incisione per questo preventivo */}
-                    <div className="space-y-1.5 pt-2 border-t border-gray-100">
-                      <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Colore Incisione Copertina</label>
-                      <div className="flex flex-wrap gap-2">
-                        {(() => {
-                          const allowedForMat = getAllowedEngravingsForMat(j.name);
-                          const activeColorId = j.engravingColor && allowedForMat.some(x => x.id === j.engravingColor)
-                            ? j.engravingColor
-                            : allowedForMat[0]?.id || 'oro_brillante';
-                          return allowedForMat.map(e => {
-                            const isSelected = activeColorId === e.id;
-                            return (
-                              <button
-                                key={e.id}
-                                type="button"
-                                onClick={() => setTJobs(p => p.map(x => x.id === j.id ? { ...x, engravingColor: e.id } : x))}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border transition-all active:scale-[0.97] ${
-                                  isSelected
-                                    ? 'bg-brandBlue/10 text-brandBlue border-brandBlue/30'
-                                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
-                                }`}
-                              >
-                                <div className={`w-3.5 h-3.5 rounded-full ${e.bgClass} shadow-inner`} />
-                                <span>{e.name}</span>
-                              </button>
-                            );
-                          });
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* Tasto Analizza PDF in fondo */}
-                    <div className="pt-2">
+                    {/* Tasto Analizza PDF */}
+                    <div className="pt-1">
                        <button 
                           onClick={() => {
                             const el = document.getElementById(`f-${j.id}`) as HTMLInputElement;
                             el?.click();
                           }} 
-                          className="w-full h-12 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-2xl font-bold text-xs uppercase flex items-center justify-center gap-3 active:scale-[0.98] transition-all border border-gray-200" 
+                          className="w-full h-12 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-2xl font-black text-xs uppercase flex items-center justify-center gap-2.5 active:scale-[0.98] transition-all border border-emerald-200 cursor-pointer shadow-sm" 
                         >
                           {analyzingId === j.id ? <Loader2 className="animate-spin" size={18} /> : <FileScan size={18} />}
-                          {analyzingId === j.id ? 'Analisi in corso...' : 'Analizza PDF'}
+                          {analyzingId === j.id ? 'Analisi del file in corso...' : 'Carica & Analizza PDF'}
                         </button>
                         <input 
                           id={`f-${j.id}`} 
@@ -1087,420 +1178,244 @@ const App: React.FC = () => {
                             if (e.target.files?.[0]) analyze(j.id, e.target.files[0]);
                           }} 
                         />
+                        {j.fileName && (
+                          <div className="mt-2 text-center text-[10px] text-emerald-600 font-extrabold uppercase tracking-wide flex items-center justify-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                            Analizzato: {j.fileName}
+                          </div>
+                        )}
+                    </div>
+
+                    {/* Campi di input migliorati, visualizzati come righe con didascalie */}
+                    <div className="space-y-3 pt-4 border-t border-gray-100">
+                      <div className="flex items-center justify-between gap-4 bg-gray-50/70 p-3.5 rounded-3xl border border-gray-100/80 hover:bg-gray-50 transition-colors">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-black text-gray-800 uppercase tracking-tight">Pagine Bianco & Nero</span>
+                          <span className="text-[10px] text-gray-400 font-bold leading-normal">Pagine di solo testo o tabelle</span>
+                        </div>
+                        <div className="w-32 shrink-0">
+                          <NumIn v={j.bwPages} onChange={v => setTJobs(p => p.map(x => x.id === j.id ? {...x, bwPages: v as number} : x))} />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4 bg-gray-50/70 p-3.5 rounded-3xl border border-gray-100/80 hover:bg-gray-50 transition-colors">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-black text-gray-800 uppercase tracking-tight">Pagine a Colori</span>
+                          <span className="text-[10px] text-gray-400 font-bold leading-normal">Immagini, grafici o elementi colorati</span>
+                        </div>
+                        <div className="w-32 shrink-0">
+                          <NumIn v={j.colorPages} onChange={v => setTJobs(p => p.map(x => x.id === j.id ? {...x, colorPages: v as number} : x))} />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4 bg-gray-50/70 p-3.5 rounded-3xl border border-gray-100/80 hover:bg-gray-50 transition-colors">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-black text-gray-800 uppercase tracking-tight">Numero di Copie</span>
+                          <span className="text-[10px] text-gray-400 font-bold leading-normal">Quante copie desideri stampare</span>
+                        </div>
+                        <div className="w-32 shrink-0">
+                          <NumIn v={j.cps} min={1} onChange={v => setTJobs(p => p.map(x => x.id === j.id ? {...x, cps: v as number} : x))} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
-              </div>
-            ) : (
-              <div className="bg-white/5 border border-white/10 rounded-4xl p-10 text-center">
-                <p className="text-white/40 text-sm font-medium italic">Seleziona un colore sopra per procedere</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 3. RIEPILOGO E CONFERMA (Nuova Tab) */}
-      {isStarted && (
-        <div ref={summaryRef} className="space-y-4 animate-slide" style={{ animationDelay: '0.3s' }}>
-           <button 
-             onClick={() => setActiveSections(p => ({...p, summary: !p.summary}))}
-             className="w-full bg-white/10 text-white p-5 rounded-3xl flex items-center justify-between border border-white/20 backdrop-blur-sm btn-touch"
-           >
-             <div className="flex items-center gap-3">
-               <Receipt size={20} />
-               <span className="font-bold uppercase tracking-tight text-sm">Riepilogo Ordine</span>
-             </div>
-             {activeSections.summary ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-           </button>
-           <div className={`section-transition ${activeSections.summary ? 'section-open' : 'section-closed'}`}>
-             <div className="bg-white rounded-4xl p-6 card-shadow space-y-6">
-                {tJobs.length > 0 ? (
-                  <div className="space-y-6">
-                    {/* Dettagli Costi */}
-                    <div className="space-y-4 divide-y divide-gray-100">
-                        {tJobs.map(j => {
-                            const mat = THESIS_MATS[j.matIdx];
-                            const jobCost = calculateJobCost(j);
-                            const engravingLabel = ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante'))?.name || 'ORO brillante';
-                            return (
-                              <div key={j.id} className="pt-4 first:pt-0">
-                                  <div className="flex justify-between items-start mb-1">
-                                      <span className="font-black text-sm uppercase text-gray-800">{j.name}</span>
-                                      <span className="font-bold text-sm text-gray-900">{fmt(jobCost)}</span>
-                                  </div>
-                                  <div className="text-[11px] text-gray-500 font-medium space-y-0.5">
-                                      <div>Incisione: <span className="font-bold text-gray-700">{engravingLabel}</span></div>
-                                      <div>Copertina: {fmt(mat.p)}</div>
-                                      <div>Pagine: {j.bwPages} Bianco e Nero, {j.colorPages} Colori</div>
-                                      <div>Copie: {j.cps}</div>
-                                  </div>
-                              </div>
-                            );
-                        })}
-                    </div>
-                    
-                    {/* Totale */}
-                    <div className="border-t border-gray-200 pt-4 flex justify-between items-end">
-                        <span className="text-xs font-black uppercase text-gray-400 tracking-wider">Totale Stimato</span>
-                        <span className="text-2xl font-black text-brandBlue">{fmt(total)}</span>
-                    </div>
-
-                    {/* Input Nome */}
-                    <div className="space-y-2 pt-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Intestazione Ordine</label>
-                        <input 
-                          type="text" 
-                          placeholder="INSERISCI IL TUO NOME" 
-                          value={customer} 
-                          onChange={e => setCustomer(e.target.value)} 
-                          className="w-full h-14 px-5 border rounded-xl font-bold text-sm uppercase focus:ring-2 focus:ring-brandBlue/10 focus:border-brandBlue outline-none transition-all placeholder:text-gray-300 bg-gray-50 animate-blink-orange" 
-                        />
-                    </div>
-
-                    {/* Tasto WhatsApp */}
-                    <button 
-                        onClick={sendWa} 
-                        disabled={tJobs.length === 0}
-                        className={`w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all btn-touch shadow-xl ${tJobs.length > 0 ? 'bg-[#25D366] text-white shadow-green-900/20' : 'bg-gray-100 text-gray-300 shadow-none grayscale cursor-not-allowed'}`}
-                    >
-                      Invia Ordine WhatsApp <Send size={20} />
-                    </button>
-
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-400 text-sm font-medium">Nessun articolo nel carrello</div>
-                )}
-             </div>
-           </div>
-        </div>
-      )}
-
-      {/* 4. SLAB DINAMICO (Solo Navigazione) */}
-      <div className="bg-white rounded-4xl p-10 card-shadow flex flex-col items-center animate-slide">
-        {!isStarted ? (
-          <div className="w-full flex flex-col items-center gap-10">
-            <img src={LOGO_URL} className="h-32 w-auto opacity-100" alt="Sudpen" />
-            <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">Preventivo Tesi</h1>
-              <p className="text-gray-400 text-sm">Calcola il costo della tua stampa professionale</p>
-            </div>
-            <div className="w-full flex flex-col items-center gap-4">
-              <button 
-                onClick={() => { setIsStarted(true); setActiveSections({ covers: true, calc: true, summary: true }); }}
-                className="w-full h-16 bg-brandBlue text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 btn-touch shadow-lg shadow-blue-900/20"
-              >
-                Iniziamo <ArrowRight size={20} />
-              </button>
-              <button 
-                onClick={() => setShowCraftsmanshipModal(true)}
-                className="text-brandBlue/90 hover:text-brandBlue font-extrabold text-sm tracking-wider uppercase flex items-center gap-2 py-2 transition-colors duration-200"
-              >
-                Scopri di più <Sparkles size={16} className="text-amber-500 fill-amber-500/20 animate-pulse" />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full space-y-6">
-            <div className="flex items-center justify-between border-b pb-4">
-              <img src={LOGO_URL} className="h-8 w-auto" alt="Sudpen" />
-              <div className="text-right">
-                <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Totale Parziale</p>
-                <p className="text-2xl font-black text-brandBlue">{fmt(total)}</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-
-
-      {/* 5. ALLINEATORE VISIVO STRUMENTO */}
-      <div className="mt-4 border-t border-white/10 pt-6">
-        <button 
-          onClick={() => setShowAligner(!showAligner)}
-          className="mx-auto block text-white/40 hover:text-white/80 font-bold text-[10px] uppercase tracking-widest transition-colors py-2 px-4 rounded-full border border-white/5 bg-white/5 active:scale-[0.98] cursor-pointer"
-        >
-          {showAligner ? "❌ Chiudi Strumento Allineamento" : "🔧 Strumento Allineamento Immagini Drive"}
-        </button>
-
-        {showAligner && (
-          <div className="mt-4 bg-white rounded-4xl p-6 text-gray-900 space-y-6 card-shadow animate-slide max-w-4xl mx-auto">
-            <div className="space-y-1">
-              <h3 className="text-lg font-black uppercase text-gray-800">Allineatore Immagini Google Drive</h3>
-              <p className="text-xs text-gray-500">
-                Usa questo strumento per associare ciascuno dei <strong>{THESIS_MATS.length} materiali</strong> all'immagine corretta presente su Google Drive.<br />
-                A sinistra vedi la foto di riferimento originale (Vercel) che è corretta al 100%. A destra vedi la foto caricata da Google Drive. Seleziona l'immagine corretta dal menu a tendina o usa l'allineamento automatico.<br />
-                Copia poi il codice JSON generato e incollalo in <code className="bg-gray-100 px-1 py-0.5 rounded font-mono">data.ts</code>.
-              </p>
-            </div>
-
-            {/* PANNELLO STRUMENTI INTELLIGENTI (OPZIONE B) */}
-            <div className="bg-gray-50 border border-gray-100 rounded-3xl p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-gray-200/60 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-2.5 w-2.5 rounded-full bg-brandBlue animate-pulse" />
-                  <h4 className="text-sm font-black uppercase text-gray-800 tracking-wider">Opzione B: Allineamento Automatico Intelligente</h4>
-                </div>
-                <span className="text-[10px] bg-brandBlue/10 text-brandBlue font-extrabold uppercase px-2 py-0.5 rounded-full">
-                  Altamente Raccomandato
-                </span>
-              </div>
-
-              {toastMessage && (
-                <div className={`p-3 rounded-xl text-xs font-bold flex justify-between items-center ${
-                  toastMessage.type === 'success' ? 'bg-green-50 text-green-800 border border-green-100' :
-                  toastMessage.type === 'error' ? 'bg-red-50 text-red-800 border border-red-100' :
-                  'bg-blue-50 text-blue-800 border border-blue-100'
-                }`}>
-                  <span>{toastMessage.text}</span>
-                  <button onClick={() => setToastMessage(null)} className="text-[10px] font-bold uppercase hover:underline opacity-60 ml-2">Chiudi</button>
-                </div>
-              )}
-
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Dal momento che hai rinominato i file nella cartella Drive con i nomi corretti dei materiali, non è necessario fare l'associazione a mano! Scegli uno di questi due metodi per allineare tutto istantaneamente:
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                {/* Metodo 1: Chiave API Google */}
-                <div className="bg-white p-4 rounded-2xl border border-gray-200/80 space-y-3 flex flex-col justify-between">
-                  <div className="space-y-1.5">
-                    <span className="text-[9px] bg-gray-100 text-gray-600 font-black uppercase px-2 py-0.5 rounded">Metodo 1</span>
-                    <h5 className="font-extrabold text-xs text-gray-900 uppercase">Verifica tramite Chiave API Google</h5>
-                    <p className="text-[11px] text-gray-500 leading-normal">
-                      Inserisci una chiave API di Google per recuperare in tempo reale i nomi reali di tutti i file direttamente da Drive.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <input
-                      type="password"
-                      placeholder="Incolla qui la tua API Key di Google..."
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      className="w-full p-2 border border-gray-200 rounded-xl text-xs font-mono bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brandBlue/20"
-                    />
-                    <button
-                      onClick={handleFetchNamesWithApiKey}
-                      disabled={isLoadingNames}
-                      className="w-full bg-gray-900 hover:bg-gray-800 text-white text-[11px] font-black uppercase py-2.5 px-3 rounded-xl transition-all cursor-pointer disabled:opacity-50"
-                    >
-                      {isLoadingNames ? "Caricamento in corso..." : "🔍 Recupera Nomi e Allinea"}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Metodo 2: Copia e Incolla la Lista dei File */}
-                <div className="bg-white p-4 rounded-2xl border border-gray-200/80 space-y-3 flex flex-col justify-between">
-                  <div className="space-y-1.5">
-                    <span className="text-[9px] bg-gray-100 text-gray-600 font-black uppercase px-2 py-0.5 rounded">Metodo 2</span>
-                    <h5 className="font-extrabold text-xs text-gray-900 uppercase">Copia e Incolla Lista File</h5>
-                    <p className="text-[11px] text-gray-500 leading-normal">
-                      Copia e incolla un testo qualsiasi contenente gli ID di Drive e i nomi dei file. L'app li estrarrà e li abbinerà automaticamente!
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <textarea
-                      placeholder="Esempio: &#10;VERDE PINO seta -> 1a2nduEHKppdaJtYCIBJAeO-9amEPzaoz&#10;Oppure incolla il testo inviato in chat o l'output di uno script..."
-                      value={pasteInput}
-                      onChange={(e) => setPasteInput(e.target.value)}
-                      rows={2}
-                      className="w-full p-2 border border-gray-200 rounded-xl text-xs font-mono bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brandBlue/20 resize-none"
-                    />
-                    <button
-                      onClick={() => handleParseAndApplyPastedList(pasteInput)}
-                      className="w-full bg-brandBlue hover:bg-brandBlue/90 text-white text-[11px] font-black uppercase py-2.5 px-3 rounded-xl transition-all cursor-pointer"
-                    >
-                      🚀 Analizza Testo e Allinea
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Statistiche allineamento */}
-              <div className="bg-gray-100/60 p-3 rounded-2xl flex flex-wrap justify-between items-center gap-2 text-xs font-bold text-gray-700">
-                <div className="flex items-center gap-1.5">
-                  <span>File con nome conosciuto:</span>
-                  <span className="px-2 py-0.5 bg-gray-200 text-gray-800 rounded-full font-extrabold">
-                    {Object.keys(fetchedFileNames).length} / 40
-                  </span>
-                </div>
                 
-                <div className="flex gap-2">
-                  {Object.keys(fetchedFileNames).length > 0 && (
-                    <button
-                      onClick={() => {
-                        const count = handleAutoAlignWithNames(fetchedFileNames);
-                        setToastMessage({ type: 'success', text: `Allineamento automatico rieseguito con successo! Associati ${count} materiali.` });
-                      }}
-                      className="px-3 py-1 bg-white hover:bg-gray-50 border border-gray-200 text-gray-800 text-[10px] font-black uppercase rounded-lg cursor-pointer"
-                    >
-                      🔄 Riavvia Matching Intelligente
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setFetchedFileNames({});
-                      setManualMatches({});
-                      localStorage.removeItem('drive_fetched_file_names');
-                      setToastMessage({ type: 'info', text: 'Stato di allineamento resettato.' });
-                    }}
-                    className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-black uppercase rounded-lg cursor-pointer"
-                  >
-                    🗑️ Reset Allineamento
-                  </button>
-                </div>
-              </div>
-            </div>
+                {/* Pulsante per aggiungere un'altra tesi */}
+                <button 
+                  onClick={() => {
+                    setDirection('down');
+                    setIsStarted(false);
+                    setCurrentStep(1);
+                  }}
+                  className="w-full py-4 border-2 border-dashed border-white/20 hover:border-white/45 text-white/70 hover:text-white rounded-3xl font-extrabold text-xs uppercase flex items-center justify-center gap-2 transition-all cursor-pointer bg-white/5 active:scale-[0.98]"
+                >
+                  ➕ Aggiungi un'altra tesi / copertina
+                </button>
 
-            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4 no-scrollbar divide-y divide-gray-100">
-              {THESIS_MATS.map((m, idx) => {
-                const keyNum = idx + 1;
-                const selectedDriveId = manualMatches[m.n] || "";
-                const driveImgUrl = selectedDriveId ? `https://lh3.googleusercontent.com/d/${selectedDriveId}` : "";
-                
-                // Controlla se lo stesso Drive ID è usato da più materiali (escluso se vuoto)
-                const isDuplicated = selectedDriveId 
-                  ? Object.values(manualMatches).filter(id => id === selectedDriveId).length > 1
-                  : false;
-
-                return (
-                  <div key={m.n} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center py-4 first:pt-0">
-                    <div className="text-xs font-black text-gray-400 w-8 shrink-0">#{keyNum}</div>
-                    
-                    {/* Visual Comparison */}
-                    <div className="flex gap-4 items-center shrink-0">
-                      {/* Vercel Ref (Correct) */}
-                      <div className="flex flex-col items-center">
-                        <span className="text-[8px] font-black uppercase text-gray-400">Ref Vercel</span>
-                        <div className="w-14 h-18 bg-gray-50 border rounded-lg overflow-hidden flex items-center justify-center">
-                          <img 
-                            src={m.img} 
-                            alt={`${m.n} Ref`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="text-gray-300 font-bold">➔</div>
-
-                      {/* Drive Current */}
-                      <div className="flex flex-col items-center">
-                        <span className="text-[8px] font-black uppercase text-gray-400">Drive</span>
-                        <div className="w-14 h-18 bg-gray-50 border rounded-lg overflow-hidden flex items-center justify-center relative">
-                          {driveImgUrl ? (
-                            <img 
-                              src={driveImgUrl} 
-                              alt={`${m.n} Drive`}
-                              className="w-full h-full object-cover"
-                              referrerPolicy="no-referrer"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <span className="text-[10px] text-gray-300 font-bold">Vuoto</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Material Selector & Drive ID dropdown */}
-                    <div className="flex-1 w-full space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs uppercase text-gray-900">{m.n}</span>
-                        {isDuplicated && (
-                          <span className="px-1.5 py-0.5 bg-amber-100 text-amber-800 text-[8px] font-black uppercase rounded tracking-wider">
-                            ⚠️ ID Duplicato
-                          </span>
-                        )}
-                        {!selectedDriveId && (
-                          <span className="px-1.5 py-0.5 bg-red-100 text-red-800 text-[8px] font-black uppercase rounded tracking-wider">
-                            Non Associato
-                          </span>
-                        )}
-                      </div>
-
-                      <select
-                        value={selectedDriveId}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setManualMatches(prev => ({ ...prev, [m.n]: val }));
-                        }}
-                        className="w-full p-2 border rounded-xl text-xs bg-gray-50 font-bold focus:outline-none focus:ring-2 focus:ring-brandBlue/20 text-gray-900"
-                      >
-                        <option value="">-- Associa un'immagine da Drive --</option>
-                        {DRIVE_FILES.map((fid, fidx) => {
-                          const customName = fetchedFileNames[fid];
-                          return (
-                            <option key={fid} value={fid}>
-                              Drive File #{fidx + 1} {customName ? `(${customName})` : `(${fid.substring(0, 8)}...)`}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <div className="text-[9px] text-gray-400 font-mono flex flex-wrap justify-between items-center gap-1">
-                        <span>Drive ID corrente: {selectedDriveId || "Nessuno"}</span>
-                        {selectedDriveId && fetchedFileNames[selectedDriveId] && (
-                          <span className="text-brandBlue font-bold bg-brandBlue/5 px-1.5 py-0.5 rounded text-[8px] uppercase">
-                            Nome su Drive: "{fetchedFileNames[selectedDriveId]}"
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Generated Code Output */}
-            <div className="space-y-2 pt-4 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] font-black uppercase text-gray-500">Mappatura Ordinata (Copia questo per data.ts):</label>
+                {/* Shimmering Button to proceed to summary */}
                 <button
                   onClick={() => {
-                    const codeLines = THESIS_MATS.map(m => {
-                      const matchedDriveId = manualMatches[m.n] || "";
-                      return `  "${m.n}": "${matchedDriveId}",`;
-                    }).join('\n');
-
-                    const code = `// Mappa degli ID dei file immagine pubblici su Google Drive corrispondenti al nome del materiale
-export const DRIVE_IMAGE_IDS: Record<string, string> = {
-${codeLines}
-};`;
-                    navigator.clipboard.writeText(code);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2500);
+                    setDirection('up');
+                    setCurrentStep(2);
                   }}
-                  className={`px-4 py-2 rounded-xl text-xs font-extrabold uppercase transition-all cursor-pointer ${
-                    copied ? 'bg-green-500 text-white animate-pulse' : 'bg-brandBlue text-white hover:bg-brandBlue/90'
-                  }`}
+                  className="relative overflow-hidden w-full h-16 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 btn-touch shadow-lg shadow-emerald-900/20 cursor-pointer mt-8"
                 >
-                  {copied ? "✓ Copiato!" : "📋 Copia Codice DRIVE_IMAGE_IDS"}
+                  {/* Shimmer effect */}
+                  <motion.div
+                    className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 pointer-events-none"
+                    initial={{ x: '-100%' }}
+                    animate={{ x: '100%' }}
+                    transition={{ repeat: Infinity, duration: 1.8, ease: 'linear', repeatDelay: 1 }}
+                  />
+                  <span className="relative z-10 flex items-center gap-3">
+                    Calcola Preventivo <ArrowDown size={20} className="animate-bounce" />
+                  </span>
                 </button>
               </div>
-              
-              <textarea
-                readOnly
-                value={`// Mappa degli ID dei file immagine pubblici su Google Drive corrispondenti al nome del materiale
-export const DRIVE_IMAGE_IDS: Record<string, string> = {
-${THESIS_MATS.map(m => {
-  const matchedDriveId = manualMatches[m.n] || "";
-  return `  "${m.n}": "${matchedDriveId}",`;
-}).join('\n')}
-};`}
-                rows={8}
-                className="w-full p-3 font-mono text-[10px] bg-gray-900 text-green-400 rounded-xl resize-none"
-              />
-            </div>
-          </div>
+            ) : (
+              <div className="bg-white/5 border border-white/10 rounded-4xl p-10 text-center space-y-4">
+                <p className="text-white/40 text-sm font-medium italic">Nessuna copertina nel preventivo. Torna alla schermata iniziale per sceglierne una.</p>
+                <button 
+                  onClick={() => {
+                    setDirection('down');
+                    setIsStarted(false);
+                  }}
+                  className="mx-auto block bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider py-3 px-6 rounded-xl transition-all cursor-pointer border border-white/10 active:scale-[0.98]"
+                >
+                  ↩ Scegli Copertina
+                </button>
+              </div>
+            )}
+          </motion.div>
         )}
-      </div>
+
+        {/* STEP 2: RIEPILOGO E ORDINE */}
+        {isStarted && currentStep === 2 && (
+          <motion.div
+            key="screen-step2"
+            custom={direction}
+            variants={slideVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="space-y-6"
+          >
+            {/* Tasto Sali in cima al Step 2 */}
+            <button
+              onClick={() => {
+                setDirection('down');
+                setCurrentStep(1);
+              }}
+              className="w-full h-11 bg-slate-200/90 hover:bg-slate-300 text-slate-700 font-extrabold text-xs uppercase rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-slate-300/60 shadow-sm cursor-pointer"
+            >
+              <ArrowUp size={16} className="animate-bounce" /> Sali (Modifica Pagine)
+            </button>
+
+            <div className="bg-white rounded-4xl p-6 card-shadow space-y-6 border border-gray-100">
+              {tJobs.length > 0 ? (
+                <div className="space-y-6">
+                  {/* Ricevuta di riepilogo costi */}
+                  <div>
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Dettagli Articoli</h4>
+                    <div className="space-y-4 divide-y divide-gray-100">
+                      {tJobs.map((j, idx) => {
+                        const mat = THESIS_MATS[j.matIdx];
+                        const jobCost = calculateJobCost(j);
+                        const engravingLabel = ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante'))?.name || 'ORO brillante';
+                        return (
+                          <div key={j.id} className="pt-4 first:pt-0 space-y-1">
+                            <div className="flex justify-between items-start">
+                              <span className="font-black text-sm uppercase text-gray-900 leading-tight">
+                                #{idx + 1} {j.name}
+                              </span>
+                              <span className="font-black text-sm text-brandBlue">{fmt(jobCost)}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] text-gray-500 font-medium">
+                              <div>Incisione: <span className="font-bold text-gray-800 uppercase">{engravingLabel}</span></div>
+                              <div>Copertina: {fmt(mat.p)}</div>
+                              <div>Pagine B&N: {j.bwPages} ({fmt(j.bwPages * PRICING.bw)})</div>
+                              <div>Pagine Colori: {j.colorPages} ({fmt(j.colorPages * PRICING.color.base)})</div>
+                              <div className="col-span-2 border-t border-dashed border-gray-100 mt-1 pt-1">
+                                Numero copie: <span className="font-bold text-gray-800">{j.cps}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Totale */}
+                  <div className="bg-emerald-50 rounded-3xl p-5 border border-emerald-100 flex justify-between items-center">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black uppercase text-emerald-800/60 tracking-wider">Totale Preventivato</span>
+                      <span className="text-xs text-emerald-800/80 font-medium">IVA inclusa, stampa professionale</span>
+                    </div>
+                    <span className="text-3xl font-black text-emerald-700">{fmt(total)}</span>
+                  </div>
+
+                  {/* Input Nome */}
+                  <div className="space-y-2 pt-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Intestazione Ordine (Nome e Cognome)</label>
+                      <input 
+                        type="text" 
+                        placeholder="INSERISCI IL TUO NOME PER IL FRONTESPIZIO" 
+                        value={customer} 
+                        onChange={e => setCustomer(e.target.value)} 
+                        className="w-full h-14 px-5 border rounded-xl font-bold text-sm uppercase focus:ring-2 focus:ring-brandBlue/10 focus:border-brandBlue outline-none transition-all placeholder:text-gray-300 bg-gray-50" 
+                      />
+                  </div>
+
+                  {/* Tasto Salva Ordine in Galleria (Sblocca con Nome) */}
+                  <button 
+                      onClick={saveReceiptPng} 
+                      disabled={tJobs.length === 0 || !customer.trim()}
+                      className={`relative overflow-hidden w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all btn-touch cursor-pointer ${
+                        !customer.trim() 
+                          ? "bg-gray-150 text-gray-400 border border-gray-300/60 cursor-not-allowed shadow-none" 
+                          : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-900/20"
+                      }`}
+                  >
+                    {/* Shimmer effect only when unlocked */}
+                    {customer.trim() && (
+                      <motion.div
+                        className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 pointer-events-none"
+                        initial={{ x: '-100%' }}
+                        animate={{ x: '100%' }}
+                        transition={{ repeat: Infinity, duration: 1.8, ease: 'linear', repeatDelay: 1 }}
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-2.5">
+                      {!customer.trim() ? (
+                        <>
+                          Inserisci il nome per salvare <Lock size={18} className="text-gray-400" />
+                        </>
+                      ) : (
+                        <>
+                          Salva Ordine in Galleria <Download size={20} className="animate-bounce" />
+                        </>
+                      )}
+                    </span>
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-400 text-sm font-medium">Nessun articolo nel preventivo</div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
+
 
       {/* FOOTER INFO */}
       <div className="pt-8 pb-12 text-center">
         <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.3em]">sudpen listino aggiornato a : aprile 2026</p>
       </div>
       <CraftsmanshipModal isOpen={showCraftsmanshipModal} onClose={() => setShowCraftsmanshipModal(false)} />
+      
+      {/* Toast Notifica Salvataggio Ricevuta */}
+      <AnimatePresence>
+        {showSavedToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-96 z-50 bg-slate-900 border border-emerald-500/30 text-white rounded-3xl p-5 shadow-2xl flex items-center gap-4 backdrop-blur-md"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+              <CheckCircle2 size={24} className="animate-pulse" />
+            </div>
+            <div className="flex-1">
+              <p className="font-extrabold text-sm text-emerald-400 uppercase tracking-wider">Ricevuta Salvata!</p>
+              <p className="text-white/70 text-xs font-medium">Scontrino PNG scaricato con successo nella tua galleria.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Analytics />
     </div>
   );
