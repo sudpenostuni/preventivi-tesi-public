@@ -9,6 +9,66 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { THESIS_MATS, WA_PHONE, LOGO_URL, GSHEET_URL, PRICING, USE_GOOGLE_DRIVE, DRIVE_IMAGE_IDS } from './data';
 import { CraftsmanshipModal } from './components/CraftsmanshipModal';
 
+export function hexToRgb(hex: string) {
+  const normalized = (hex || "#000000").replace('#', '');
+  const r = parseInt(normalized.slice(0, 2), 16) || 0;
+  const g = parseInt(normalized.slice(2, 4), 16) || 0;
+  const b = parseInt(normalized.slice(4, 6), 16) || 0;
+  return { r, g, b };
+}
+
+export function getLuminance(r: number, g: number, b: number) {
+  const a = [r, g, b].map(v => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+}
+
+export function getContrastRatio(hex1: string, hex2: string): number {
+  try {
+    const rgb1 = hexToRgb(hex1);
+    const rgb2 = hexToRgb(hex2);
+    const l1 = getLuminance(rgb1.r, rgb1.g, rgb1.b);
+    const l2 = getLuminance(rgb2.r, rgb2.g, rgb2.b);
+    const brightest = Math.max(l1, l2);
+    const darkest = Math.min(l1, l2);
+    return (brightest + 0.05) / (darkest + 0.05);
+  } catch (e) {
+    return 1;
+  }
+}
+
+export function getContrastScore(coverHex: string, engravingHex: string) {
+  const ratio = getContrastRatio(coverHex, engravingHex);
+  
+  if (ratio >= 4.5) {
+    return {
+      ratio,
+      label: 'Ottimo Contrasto',
+      colorClass: 'bg-emerald-50 text-emerald-700 border-emerald-150',
+      stars: '⭐⭐⭐',
+      desc: 'Massima leggibilità e risalto eccellente.'
+    };
+  } else if (ratio >= 2.5) {
+    return {
+      ratio,
+      label: 'Buon Contrasto',
+      colorClass: 'bg-amber-50 text-amber-700 border-amber-150',
+      stars: '⭐⭐',
+      desc: 'Abbinamento elegante, buona leggibilità.'
+    };
+  } else {
+    return {
+      ratio,
+      label: 'Contrasto Delicato',
+      colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-150',
+      stars: '⭐',
+      desc: 'Effetto sobrio e discreto (tono su tono).'
+    };
+  }
+}
+
 export function getMaterialInfo(name: string) {
   const n = name.toUpperCase();
   if (n.includes("SETA")) {
@@ -571,7 +631,12 @@ const App: React.FC = () => {
         if (current && allowed.some(e => e.id === current)) {
           return current;
         }
-        return allowed[0]?.id || 'oro_brillante';
+        const bestOption = allowed.reduce((best, curr) => {
+          const rCurr = getContrastRatio(mat.c, curr.color);
+          const rBest = getContrastRatio(mat.c, best?.color || '#000000');
+          return rCurr > rBest ? curr : best;
+        }, allowed[0]);
+        return bestOption?.id || 'oro_brillante';
       })()
     : 'oro_brillante';
   const modalFoil = ENGRAVINGS.find(e => e.id === modalEngravingId) || ENGRAVINGS[0];
@@ -637,9 +702,14 @@ const App: React.FC = () => {
     const mat = THESIS_MATS[idx];
     const allowed = getAllowedEngravingsForMat(mat.n);
     const chosenActive = activeEngravings[idx];
+    const bestOption = allowed.reduce((best, curr) => {
+      const rCurr = getContrastRatio(mat.c, curr.color);
+      const rBest = getContrastRatio(mat.c, best?.color || '#000000');
+      return rCurr > rBest ? curr : best;
+    }, allowed[0]);
     const chosenEngraving = chosenActive && allowed.some(e => e.id === chosenActive)
       ? chosenActive
-      : allowed[0]?.id || 'oro_brillante';
+      : bestOption?.id || 'oro_brillante';
     setTJobs([...tJobs, { 
       id: Date.now().toString(), 
       name: mat.n, 
@@ -1091,9 +1161,14 @@ const App: React.FC = () => {
                    <div className="overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar -mx-6 px-6 py-3 flex flex-row gap-5">
                      {THESIS_MATS.map((m, i) => {
                        const allowedFoilOptions = getAllowedEngravingsForMat(m.n);
+                       const bestOption = allowedFoilOptions.reduce((best, curr) => {
+                         const rCurr = getContrastRatio(m.c, curr.color);
+                         const rBest = getContrastRatio(m.c, best?.color || '#000000');
+                         return rCurr > rBest ? curr : best;
+                       }, allowedFoilOptions[0]);
                        const engravingId = activeEngravings[i] && allowedFoilOptions.some(x => x.id === activeEngravings[i])
                          ? activeEngravings[i]
-                         : allowedFoilOptions[0]?.id || 'oro_brillante';
+                         : bestOption?.id || 'oro_brillante';
                        const currentFoil = ENGRAVINGS.find(e => e.id === engravingId) || ENGRAVINGS[0];
 
                        return (
@@ -1136,13 +1211,31 @@ const App: React.FC = () => {
                            </div>
 
                            {/* Swatch Selectors for Engraving */}
-                           <div className="pt-3 pb-2 flex flex-col items-center justify-center space-y-1.5 bg-white shrink-0">
-                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                               Incisione: <span className="font-extrabold text-black">{currentFoil.name}</span>
-                             </span>
-                             <div className="flex gap-1.5 items-center">
+                           <div className="pt-3 pb-2 flex flex-col items-center justify-center space-y-1.5 bg-white shrink-0 px-3">
+                             {(() => {
+                               const contrastInfo = getContrastScore(m.c, currentFoil.color);
+                               const bestOption = allowedFoilOptions.reduce((best, curr) => {
+                                 const rCurr = getContrastRatio(m.c, curr.color);
+                                 const rBest = getContrastRatio(m.c, best.color);
+                                 return rCurr > rBest ? curr : best;
+                               }, allowedFoilOptions[0]);
+
+                               return (
+                                 <>
+                                   <div className="flex flex-col items-center space-y-1 w-full">
+                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-center gap-1.5 flex-wrap">
+                                       Incisione: <span className="font-extrabold text-black">{currentFoil.name}</span>
+                                     </span>
+                                     <span className={`px-2 py-0.5 rounded-full text-[8px] font-extrabold uppercase border tracking-wider flex items-center gap-1 ${contrastInfo.colorClass}`}>
+                                       <span>{contrastInfo.stars}</span>
+                                       <span>{contrastInfo.label}</span>
+                                     </span>
+                                   </div>
+
+                                   <div className="flex gap-1.5 items-center justify-center flex-wrap py-1">
                                {allowedFoilOptions.map((e) => {
                                  const isSelected = engravingId === e.id;
+                                 const isBest = e.id === bestOption?.id;
                                  return (
                                    <button
                                      key={e.id}
@@ -1151,19 +1244,27 @@ const App: React.FC = () => {
                                        ev.stopPropagation(); // Evita l'apertura della modale
                                        setActiveEngravings(prev => ({ ...prev, [i]: e.id }));
                                      }}
-                                     className={`w-6 h-6 rounded-full border transition-all active:scale-90 ${
+                                     className={`relative w-6 h-6 rounded-full border transition-all active:scale-90 ${
                                        isSelected 
                                          ? 'border-brandBlue scale-110 shadow-sm shadow-brandBlue/35' 
                                          : 'border-transparent hover:border-gray-300 hover:scale-105'
                                      } p-[2px] bg-white cursor-pointer`}
-                                     title={e.name}
+                                     title={`${e.name} ${isBest ? '(Consigliato)' : ''}`}
                                    >
                                      <div className={`w-full h-full rounded-full ${e.bgClass}`} />
+                                     {isBest && (
+                                       <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-white flex items-center justify-center text-[6px] text-white font-bold animate-pulse" title="Miglior contrasto">
+                                         ★
+                                       </span>
+                                     )}
                                    </button>
                                  );
                                })}
                              </div>
-                           </div>
+                           </>
+                         );
+                       })()}
+                     </div>
 
                            <div className="pt-1 pb-4 px-4 flex flex-col gap-3 bg-white shrink-0">
                               <MaterialDropdown materialName={m.n} />
