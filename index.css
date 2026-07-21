@@ -46,3 +46,14 @@ body::-webkit-scrollbar, html::-webkit-scrollbar {
   50% { border-color: #f97316; box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1); }
 }
 .animate-blink-orange { animation: blink-orange 2s infinite; }
+
+@keyframes foil-shimmer {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+.metallic-shimmer {
+  background-size: 250% auto !important;
+  animation: foil-shimmer 8s ease infinite;
+}
+

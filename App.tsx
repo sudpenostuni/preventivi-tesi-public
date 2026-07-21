@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Analytics } from "@vercel/analytics/react"
+import { jsPDF } from 'jspdf';
 import { 
   Sparkles, Trash2, Loader2, FileScan, 
   Send, Plus, Minus, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, ArrowDown, ArrowUp, User, Palette, Receipt, CheckCircle2, X, Info,
-  Lock, Download, BookOpen
+  Lock, Download, BookOpen, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { THESIS_MATS, WA_PHONE, LOGO_URL, GSHEET_URL, PRICING, USE_GOOGLE_DRIVE, DRIVE_IMAGE_IDS } from './data';
@@ -132,14 +133,14 @@ const MaterialDropdown: React.FC<{ materialName: string }> = ({ materialName }) 
   const info = getMaterialInfo(materialName);
 
   return (
-    <div className="w-full border border-gray-100 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors mt-2 text-left">
+    <div className="w-full border border-gray-100 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors mt-2 text-center">
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="w-full flex items-center justify-between px-3.5 py-2 text-xs font-bold text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
+        className="w-full flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-bold text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
       >
         <span className="flex items-center gap-1.5 font-black uppercase text-[10px] tracking-wider text-slate-500">
           <BookOpen size={12} className="text-slate-400" />
@@ -157,13 +158,55 @@ const MaterialDropdown: React.FC<{ materialName: string }> = ({ materialName }) 
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-3.5 pb-3 pt-0.5 space-y-1 text-[11px] text-gray-500 border-t border-gray-100/60 leading-relaxed font-medium">
-              <p className="text-brandBlue font-extrabold uppercase text-[9px] tracking-wider italic">
-                {info.focus}
-              </p>
-              <p className="font-normal text-gray-600 leading-normal">
-                {info.desc}
-              </p>
+            <div className="px-3.5 pb-3.5 pt-1 space-y-3 text-[11px] text-gray-500 border-t border-gray-100/60 leading-relaxed font-medium text-center flex flex-col items-center">
+              <div className="space-y-1 w-full">
+                <p className="text-brandBlue font-extrabold uppercase text-[9px] tracking-wider italic text-center">
+                  {info.focus}
+                </p>
+                <p className="font-normal text-gray-600 leading-normal text-center">
+                  {info.desc}
+                </p>
+              </div>
+
+              <div className="border-t border-dashed border-gray-200/80 pt-2.5 space-y-2 w-full flex flex-col items-center">
+                <div className="flex items-center gap-1 justify-center">
+                  <CheckCircle2 size={11} className="text-emerald-500 shrink-0" />
+                  <p className="text-gray-800 font-extrabold uppercase text-[9px] tracking-widest text-center">
+                    Qualità Artigianale
+                  </p>
+                </div>
+                
+                <p className="font-normal text-gray-500 text-[10px] leading-snug italic text-center">
+                  Ogni copertina è realizzata integralmente a mano accoppiando il cartoncino con precisione sartoriale e rifinendolo con cura.
+                </p>
+
+                <div className="space-y-2 bg-white/70 p-2.5 rounded-xl border border-gray-100/60 text-[10px] w-full text-left">
+                  <div className="grid grid-cols-[70px_1fr] gap-1.5 align-top">
+                    <span className="font-black text-slate-400 text-[8px] uppercase tracking-wider pt-0.5">Anima</span>
+                    <span className="text-slate-600 font-medium leading-normal">Cartoncino pressato da 3,5 mm (resistenza decennale).</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-[70px_1fr] gap-1.5 align-top border-t border-gray-100 pt-1.5">
+                    <span className="font-black text-slate-400 text-[8px] uppercase tracking-wider pt-0.5">Rivestimento</span>
+                    <span className="text-slate-600 font-medium leading-normal">Materiale acrilico termovirante premium (reagisce perfettamente al calore per incisioni a caldo nitide a controllo numerico).</span>
+                  </div>
+
+                  <div className="grid grid-cols-[70px_1fr] gap-1.5 align-top border-t border-gray-100 pt-1.5">
+                    <span className="font-black text-slate-400 text-[8px] uppercase tracking-wider pt-0.5">Rilegatura</span>
+                    <span className="text-slate-600 font-medium leading-normal">Brossura fresata con grecatura meccanica e collatura a caldo (formato 20x30), chiusura dorso con garza di rinforzo. Risguardi bianchi da 200 gr.</span>
+                  </div>
+
+                  <div className="grid grid-cols-[70px_1fr] gap-1.5 align-top border-t border-gray-100 pt-1.5">
+                    <span className="font-black text-slate-400 text-[8px] uppercase tracking-wider pt-0.5">Finiture</span>
+                    <span className="text-slate-600 font-medium leading-normal">Capitelli artigianali e nastrino segnapagina in raso coordinato.</span>
+                  </div>
+
+                  <div className="grid grid-cols-[70px_1fr] gap-1.5 align-top border-t border-gray-100 pt-1.5">
+                    <span className="font-black text-slate-400 text-[8px] uppercase tracking-wider pt-0.5">Interni</span>
+                    <span className="text-slate-600 font-medium leading-normal">Carta 100 gr/mq ad alta densità per una resa di stampa eccellente, con rifilatura del fascicolo su tre lati.</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -180,16 +223,16 @@ export const ENGRAVINGS = [
     color: '#E5C060', 
     bgClass: 'bg-gradient-to-br from-[#FFE89C] via-[#D4AF37] to-[#9E7815]',
     textStyle: {
-      backgroundImage: 'linear-gradient(135deg, #FFE89C 0%, #D4AF37 45%, #9E7815 70%, #FFE89C 100%)',
+      backgroundImage: 'linear-gradient(135deg, #FFE89C 0%, #F3D078 25%, #FFF2CC 45%, #D4AF37 55%, #9E7815 80%, #FFE89C 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       color: '#D4AF37',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.25))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.22)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.85))',
     },
     svgStyle: {
       stroke: '#D4AF37',
       fill: 'none',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.25))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.22)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.85))',
     },
     svgTextFill: '#D4AF37'
   },
@@ -199,16 +242,16 @@ export const ENGRAVINGS = [
     color: '#D1D5DB', 
     bgClass: 'bg-gradient-to-br from-gray-100 via-gray-300 to-gray-500',
     textStyle: {
-      backgroundImage: 'linear-gradient(135deg, #FFFFFF 0%, #C2C5CC 45%, #7C7F85 70%, #FFFFFF 100%)',
+      backgroundImage: 'linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 25%, #FFFFFF 45%, #94A3B8 55%, #475569 80%, #FFFFFF 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       color: '#C0C0C0',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.3))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.25)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.9))',
     },
     svgStyle: {
       stroke: '#C2C5CC',
       fill: 'none',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.3))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.25)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.9))',
     },
     svgTextFill: '#C2C5CC'
   },
@@ -218,16 +261,16 @@ export const ENGRAVINGS = [
     color: '#EF4444', 
     bgClass: 'bg-gradient-to-br from-red-300 via-red-600 to-red-800',
     textStyle: {
-      backgroundImage: 'linear-gradient(135deg, #FCA5A5 0%, #C41E3A 45%, #7F1D1D 70%, #FCA5A5 100%)',
+      backgroundImage: 'linear-gradient(135deg, #FEE2E2 0%, #EF4444 30%, #FCA5A5 50%, #991B1B 75%, #FEE2E2 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       color: '#C41E3A',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.2))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.22)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.75))',
     },
     svgStyle: {
       stroke: '#C41E3A',
       fill: 'none',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.2))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.22)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.75))',
     },
     svgTextFill: '#C41E3A'
   },
@@ -237,16 +280,16 @@ export const ENGRAVINGS = [
     color: '#10B981', 
     bgClass: 'bg-gradient-to-br from-emerald-300 via-emerald-600 to-emerald-800',
     textStyle: {
-      backgroundImage: 'linear-gradient(135deg, #A7F3D0 0%, #059669 45%, #064E3B 70%, #A7F3D0 100%)',
+      backgroundImage: 'linear-gradient(135deg, #D1FAE5 0%, #10B981 30%, #6EE7B7 50%, #065F46 75%, #D1FAE5 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       color: '#059669',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.2))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.22)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.75))',
     },
     svgStyle: {
       stroke: '#059669',
       fill: 'none',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.2))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.22)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.75))',
     },
     svgTextFill: '#059669'
   },
@@ -256,16 +299,16 @@ export const ENGRAVINGS = [
     color: '#D97706', 
     bgClass: 'bg-gradient-to-br from-amber-200 via-amber-600 to-amber-900',
     textStyle: {
-      backgroundImage: 'linear-gradient(135deg, #FDE68A 0%, #D97706 45%, #78350F 70%, #FDE68A 100%)',
+      backgroundImage: 'linear-gradient(135deg, #FEF3C7 0%, #D97706 30%, #FDE68A 50%, #78350F 75%, #FEF3C7 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       color: '#D97706',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.2))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.24)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.75))',
     },
     svgStyle: {
       stroke: '#D97706',
       fill: 'none',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.2))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.24)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.75))',
     },
     svgTextFill: '#D97706'
   },
@@ -342,16 +385,16 @@ export const ENGRAVINGS = [
     color: '#1E3A8A', 
     bgClass: 'bg-gradient-to-br from-blue-400 via-blue-800 to-blue-950',
     textStyle: {
-      backgroundImage: 'linear-gradient(135deg, #60A5FA 0%, #1D4ED8 45%, #172554 70%, #60A5FA 100%)',
+      backgroundImage: 'linear-gradient(135deg, #DBEAFE 0%, #2563EB 30%, #93C5FD 50%, #1E3A8A 75%, #DBEAFE 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       color: '#1E3A8A',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.15))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.22)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.7))',
     },
     svgStyle: {
       stroke: '#1E3A8A',
       fill: 'none',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.15))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.22)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.7))',
     },
     svgTextFill: '#1E3A8A'
   },
@@ -361,16 +404,16 @@ export const ENGRAVINGS = [
     color: '#F472B6', 
     bgClass: 'bg-gradient-to-br from-[#FFE4E1] via-[#E0A899] to-[#C87564]',
     textStyle: {
-      backgroundImage: 'linear-gradient(135deg, #FFF0EE 0%, #E0A899 45%, #A35C4E 70%, #FFF0EE 100%)',
+      backgroundImage: 'linear-gradient(135deg, #FFF0EE 0%, #F472B6 25%, #FFF5F4 45%, #E0A899 55%, #A35C4E 80%, #FFF0EE 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       color: '#E0A899',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.25))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.24)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.8))',
     },
     svgStyle: {
       stroke: '#E0A899',
       fill: 'none',
-      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.15)) drop-shadow(-0.5px -0.5px 0px rgba(255,255,255,0.25))',
+      filter: 'drop-shadow(0.5px 1px 0px rgba(0,0,0,0.24)) drop-shadow(-0.3px -0.3px 0.1px rgba(255,255,255,0.8))',
     },
     svgTextFill: '#E0A899'
   }
@@ -380,7 +423,21 @@ export const isEngravingAllowedForMat = (engravingId: string, matName: string): 
   const normMat = matName.toUpperCase();
   const id = engravingId.toLowerCase();
 
-  // Escludi dall'eliminazione oro e argento: oro e argento sono sempre consentiti.
+  // Escludi dalle copertine bianche le incisioni bianche e argento
+  if (normMat.includes('BIANCO')) {
+    if (id.includes('bianco') || id.includes('argento')) {
+      return false;
+    }
+  }
+
+  // Escludi dalle copertine nere l'incisione nero e blu
+  if (normMat.includes('NERO')) {
+    if (id.includes('nero') || id.includes('blu')) {
+      return false;
+    }
+  }
+
+  // Escludi dall'eliminazione oro e argento per gli altri materiali (oro e argento sono sempre consentiti)
   if (id.includes('oro') || id.includes('argento')) {
     return true;
   }
@@ -475,80 +532,85 @@ const UniversitySeal: React.FC<{ color: string, style?: React.CSSProperties }> =
 const ThesisCoverOverlay: React.FC<{ 
   foil: typeof ENGRAVINGS[0]; 
   candidateName: string;
-}> = ({ foil, candidateName }) => (
-  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-    <div 
-      className="w-full h-full absolute inset-0 flex flex-col justify-between select-none"
-      style={{
-        paddingTop: '17.5%',
-        paddingBottom: '11.5%',
-        paddingLeft: '21.5%',
-        paddingRight: '13.5%',
-        transform: 'rotate(-11.3deg) scale(0.72)',
-        transformOrigin: 'center center',
-      }}
-    >
-      {/* University Seal & Title */}
-      <div className="text-center space-y-0.5">
-        <UniversitySeal color={foil.color} style={{ filter: foil.svgStyle.filter }} />
-        
-        <h4 
-          className="font-serif text-[7.5px] sm:text-[9.5px] font-extrabold leading-tight tracking-wide"
-          style={foil.textStyle}
-        >
-          Università degli Studi
-        </h4>
-        <p 
-          className="text-[5.5px] sm:text-[7px] font-serif font-semibold italic opacity-85 tracking-wide"
-          style={foil.textStyle}
-        >
-          Dipartimento specializzato
-        </p>
-      </div>
+}> = ({ foil, candidateName }) => {
+  const isMetallic = ['oro_brillante', 'argento_lucido', 'rosso_lucido', 'verde_glossy', 'bronzo_lucido', 'blu_marino', 'rosa_gold'].includes(foil.id);
+  const shimmerClass = isMetallic ? 'metallic-shimmer' : '';
 
-      {/* Main Thesis Title Block */}
-      <div className="text-center space-y-1 my-auto py-1.5">
-        <h2 
-          className="text-[12px] sm:text-[14px] font-bold uppercase tracking-[0.2em] font-serif leading-none"
-          style={foil.textStyle}
-        >
-          TESI
-        </h2>
-        <p 
-          className="text-[6.5px] sm:text-[8px] italic font-serif leading-snug max-w-[90%] mx-auto font-medium"
-          style={foil.textStyle}
-        >
-          "La tutela del patrimonio storico-artistico nel diritto internazionale ed europeo"
-        </p>
-      </div>
-
-      {/* Candidate / Advisor section */}
-      <div className="flex justify-between items-end text-[5px] sm:text-[6.5px] font-serif w-full px-1.5 leading-tight">
-        <div className="text-left space-y-0.5">
-          <p className="opacity-80 italic text-[4.5px] sm:text-[5.5px]" style={foil.textStyle}>Relatore</p>
-          <p className="font-extrabold" style={foil.textStyle}>Chiar.mo Prof.</p>
-          <p className="font-extrabold" style={foil.textStyle}>Annoluce</p>
+  return (
+    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+      <div 
+        className="w-full h-full absolute inset-0 flex flex-col justify-between select-none"
+        style={{
+          paddingTop: '17.5%',
+          paddingBottom: '11.5%',
+          paddingLeft: '21.5%',
+          paddingRight: '13.5%',
+          transform: 'rotate(-11.3deg) scale(0.72)',
+          transformOrigin: 'center center',
+        }}
+      >
+        {/* University Seal & Title */}
+        <div className="text-center space-y-0.5">
+          <UniversitySeal color={foil.color} style={{ filter: foil.svgStyle.filter }} />
+          
+          <h4 
+            className={`font-serif text-[7.5px] sm:text-[9.5px] font-extrabold leading-tight tracking-wide ${shimmerClass}`}
+            style={foil.textStyle}
+          >
+            Università degli Studi
+          </h4>
+          <p 
+            className={`text-[5.5px] sm:text-[7px] font-serif font-semibold italic opacity-85 tracking-wide ${shimmerClass}`}
+            style={foil.textStyle}
+          >
+            Dipartimento specializzato
+          </p>
         </div>
-        <div className="text-right space-y-0.5">
-          <p className="opacity-80 italic text-[4.5px] sm:text-[5.5px]" style={foil.textStyle}>Laureando</p>
-          <p className="font-extrabold whitespace-nowrap" style={foil.textStyle}>
-            {candidateName ? candidateName.toUpperCase() : 'BRUNO FIORETTI'}
+
+        {/* Main Thesis Title Block */}
+        <div className="text-center space-y-1 my-auto py-1.5">
+          <h2 
+            className={`text-[12px] sm:text-[14px] font-bold uppercase tracking-[0.2em] font-serif leading-none ${shimmerClass}`}
+            style={foil.textStyle}
+          >
+            TESI
+          </h2>
+          <p 
+            className={`text-[6.5px] sm:text-[8px] italic font-serif leading-snug max-w-[90%] mx-auto font-medium ${shimmerClass}`}
+            style={foil.textStyle}
+          >
+            "La tutela del patrimonio storico-artistico nel diritto internazionale ed europeo"
+          </p>
+        </div>
+
+        {/* Candidate / Advisor section */}
+        <div className="flex justify-between items-end text-[5px] sm:text-[6.5px] font-serif w-full px-1.5 leading-tight">
+          <div className="text-left space-y-0.5">
+            <p className={`opacity-80 italic text-[4.5px] sm:text-[5.5px] ${shimmerClass}`} style={foil.textStyle}>Relatore</p>
+            <p className={`font-extrabold ${shimmerClass}`} style={foil.textStyle}>Chiar.mo Prof.</p>
+            <p className={`font-extrabold ${shimmerClass}`} style={foil.textStyle}>Annoluce</p>
+          </div>
+          <div className="text-right space-y-0.5">
+            <p className={`opacity-80 italic text-[4.5px] sm:text-[5.5px] ${shimmerClass}`} style={foil.textStyle}>Laureando</p>
+            <p className={`font-extrabold whitespace-nowrap ${shimmerClass}`} style={foil.textStyle}>
+              {candidateName ? candidateName.toUpperCase() : 'BRUNO FIORETTI'}
+            </p>
+          </div>
+        </div>
+
+        {/* Academic Year */}
+        <div className="text-center mt-0.5">
+          <p 
+            className={`text-[5px] sm:text-[6px] font-serif font-bold tracking-widest opacity-80 uppercase ${shimmerClass}`}
+            style={foil.textStyle}
+          >
+            Anno Accademico 2025/26
           </p>
         </div>
       </div>
-
-      {/* Academic Year */}
-      <div className="text-center mt-0.5">
-        <p 
-          className="text-[5px] sm:text-[6px] font-serif font-bold tracking-widest opacity-80 uppercase"
-          style={foil.textStyle}
-        >
-          Anno Accademico 2025/26
-        </p>
-      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const fmt = (v: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(v);
 const safeNum = (v: any) => parseInt(v?.toString() || '0') || 0;
@@ -631,18 +693,14 @@ const App: React.FC = () => {
         if (current && allowed.some(e => e.id === current)) {
           return current;
         }
-        const bestOption = allowed.reduce((best, curr) => {
-          const rCurr = getContrastRatio(mat.c, curr.color);
-          const rBest = getContrastRatio(mat.c, best?.color || '#000000');
-          return rCurr > rBest ? curr : best;
-        }, allowed[0]);
-        return bestOption?.id || 'oro_brillante';
+        return allowed.some(e => e.id === 'oro_brillante') ? 'oro_brillante' : (allowed[0]?.id || 'oro_brillante');
       })()
     : 'oro_brillante';
   const modalFoil = ENGRAVINGS.find(e => e.id === modalEngravingId) || ENGRAVINGS[0];
   
   const detailsRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let tot = 0;
@@ -702,14 +760,9 @@ const App: React.FC = () => {
     const mat = THESIS_MATS[idx];
     const allowed = getAllowedEngravingsForMat(mat.n);
     const chosenActive = activeEngravings[idx];
-    const bestOption = allowed.reduce((best, curr) => {
-      const rCurr = getContrastRatio(mat.c, curr.color);
-      const rBest = getContrastRatio(mat.c, best?.color || '#000000');
-      return rCurr > rBest ? curr : best;
-    }, allowed[0]);
     const chosenEngraving = chosenActive && allowed.some(e => e.id === chosenActive)
       ? chosenActive
-      : bestOption?.id || 'oro_brillante';
+      : (allowed.some(e => e.id === 'oro_brillante') ? 'oro_brillante' : (allowed[0]?.id || 'oro_brillante'));
     setTJobs([...tJobs, { 
       id: Date.now().toString(), 
       name: mat.n, 
@@ -810,18 +863,18 @@ const App: React.FC = () => {
 
   const [showSavedToast, setShowSavedToast] = useState(false);
 
-  const saveReceiptPng = () => {
+  const generateReceiptCanvas = (): HTMLCanvasElement | null => {
     logToSheet();
     
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return null;
 
     // Configurazione dimensioni del volantino/scontrino
     const width = 750;
     const headerHeight = 310;
     const itemHeight = 170;
-    const footerHeight = 240;
+    const footerHeight = 340; // Spazio extra per inserire il box info whatsapp
     const height = headerHeight + (tJobs.length * itemHeight) + footerHeight;
 
     canvas.width = width;
@@ -892,7 +945,7 @@ const App: React.FC = () => {
     ctx.textAlign = 'right';
     ctx.font = 'bold 16px sans-serif';
     ctx.fillStyle = '#111827';
-    ctx.fillText(`CLIENTE: ${customer.toUpperCase()}`, width - 50, 260);
+    ctx.fillText(`PREVENTIVO ONLINE`, width - 50, 260);
     
     ctx.font = 'italic 12px monospace';
     ctx.fillStyle = '#6B7280';
@@ -985,6 +1038,19 @@ const App: React.FC = () => {
     ctx.fillStyle = '#6B7280';
     ctx.fillText('Prezzi comprensivi di IVA e rilegatura professionale tesi.', 50, currentY + 32);
 
+    // --- CONTATTI E WHATSAPP ---
+    currentY += 80;
+    ctx.fillStyle = '#ECFDF5';
+    ctx.fillRect(40, currentY - 15, width - 80, 50);
+    ctx.strokeStyle = '#10B981';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(40, currentY - 15, width - 80, 50);
+
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillStyle = '#065F46';
+    ctx.fillText('PER INFO E ORDINI (WHATSAPP): 391 7972545', width / 2, currentY + 16);
+
     // --- SEZIONE FOOTER ---
     currentY += 100;
     
@@ -1006,19 +1072,47 @@ const App: React.FC = () => {
 
     ctx.font = 'italic 13.5px sans-serif';
     ctx.fillStyle = '#4B5563';
-    ctx.fillText('Salva questa ricevuta in galleria e mostrala in sede per procedere con la stampa.', width / 2, currentY + 26);
+    ctx.fillText('Mostra questo preventivo in sede per procedere con la stampa e rilegatura.', width / 2, currentY + 26);
 
-    // Download dell'immagine in PNG
+    return canvas;
+  };
+
+  const saveReceiptPng = () => {
+    const canvas = generateReceiptCanvas();
+    if (!canvas) return;
+
     const link = document.createElement('a');
-    link.download = `SUDPEN_RICEVUTA_${customer.toUpperCase().replace(/\s+/g, '_') || 'TESI'}.png`;
+    link.download = `SUDPEN_PREVENTIVO_${Date.now()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
 
-    // Mostra un feedback all'utente
     setShowSavedToast(true);
     setTimeout(() => {
       setShowSavedToast(false);
     }, 4000);
+  };
+
+  const saveReceiptPdf = () => {
+    const canvas = generateReceiptCanvas();
+    if (!canvas) return;
+
+    try {
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`SUDPEN_PREVENTIVO_${Date.now()}.pdf`);
+
+      setShowSavedToast(true);
+      setTimeout(() => {
+        setShowSavedToast(false);
+      }, 4000);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+    }
   };
 
   const calculateJobCost = (j: Job) => {
@@ -1156,19 +1250,38 @@ const App: React.FC = () => {
 
              {/* Carosello Scelta Copertine */}
              {introUnlocked && (
-               <div id="startup-carousel" className="space-y-2 animate-slide" style={{ animationDelay: '0.1s' }}>
+               <div id="startup-carousel" className="space-y-2 animate-slide relative group/carousel" style={{ animationDelay: '0.1s' }}>
+                   {/* Frecce di navigazione desktop */}
+                   <button
+                     type="button"
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       carouselRef.current?.scrollBy({ left: -310, behavior: 'smooth' });
+                     }}
+                     className="absolute left-2 top-[170px] z-30 bg-white/90 hover:bg-white text-brandBlue hover:text-brandBlue/80 p-2 rounded-full border border-gray-200 shadow-md active:scale-90 transition-all md:flex hidden items-center justify-center cursor-pointer select-none hover:shadow-lg"
+                     aria-label="Precedente"
+                   >
+                     <ChevronLeft size={18} />
+                   </button>
+                   <button
+                     type="button"
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       carouselRef.current?.scrollBy({ left: 310, behavior: 'smooth' });
+                     }}
+                     className="absolute right-2 top-[170px] z-30 bg-white/90 hover:bg-white text-brandBlue hover:text-brandBlue/80 p-2 rounded-full border border-gray-200 shadow-md active:scale-90 transition-all md:flex hidden items-center justify-center cursor-pointer select-none hover:shadow-lg"
+                     aria-label="Successivo"
+                   >
+                     <ChevronRight size={18} />
+                   </button>
+
                    {/* Reel Container */}
-                   <div className="overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar -mx-6 px-6 py-3 flex flex-row gap-5">
+                   <div ref={carouselRef} className="overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar -mx-6 px-6 py-3 flex flex-row gap-5">
                      {THESIS_MATS.map((m, i) => {
                        const allowedFoilOptions = getAllowedEngravingsForMat(m.n);
-                       const bestOption = allowedFoilOptions.reduce((best, curr) => {
-                         const rCurr = getContrastRatio(m.c, curr.color);
-                         const rBest = getContrastRatio(m.c, best?.color || '#000000');
-                         return rCurr > rBest ? curr : best;
-                       }, allowedFoilOptions[0]);
                        const engravingId = activeEngravings[i] && allowedFoilOptions.some(x => x.id === activeEngravings[i])
                          ? activeEngravings[i]
-                         : bestOption?.id || 'oro_brillante';
+                         : (allowedFoilOptions.some(x => x.id === 'oro_brillante') ? 'oro_brillante' : (allowedFoilOptions[0]?.id || 'oro_brillante'));
                        const currentFoil = ENGRAVINGS.find(e => e.id === engravingId) || ENGRAVINGS[0];
 
                        return (
@@ -1195,6 +1308,14 @@ const App: React.FC = () => {
                              {/* Dynamic engraving overlay */}
                              <ThesisCoverOverlay foil={currentFoil} candidateName={customer} />
 
+                              {/* Bolla dell'incisione scelta nella parte bassa dell'immagine */}
+                              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/25 text-white text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-2 shadow-lg select-none z-10 whitespace-nowrap animate-fade-in">
+                                <div className={`w-2.5 h-2.5 rounded-full ${currentFoil.bgClass} relative overflow-hidden ring-1 ring-white/30 shrink-0`}>
+                                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/40 pointer-events-none" />
+                                </div>
+                                <span>Incisione: <span className="text-amber-300 font-black">{currentFoil.name}</span></span>
+                              </div>
+
                              {/* Swipe Hint on First Image */}
                              {i === 0 && (
                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
@@ -1211,59 +1332,60 @@ const App: React.FC = () => {
                            </div>
 
                            {/* Swatch Selectors for Engraving */}
-                           <div className="pt-3 pb-2 flex flex-col items-center justify-center space-y-1.5 bg-white shrink-0 px-3">
-                             {(() => {
-                               const contrastInfo = getContrastScore(m.c, currentFoil.color);
-                               const bestOption = allowedFoilOptions.reduce((best, curr) => {
-                                 const rCurr = getContrastRatio(m.c, curr.color);
-                                 const rBest = getContrastRatio(m.c, best.color);
-                                 return rCurr > rBest ? curr : best;
-                               }, allowedFoilOptions[0]);
+                            <div className="pt-3 pb-2 flex flex-col items-center justify-center bg-white shrink-0 px-3 w-full border-b border-gray-100">
+                              {(() => {
+                                const brillantiIds = ['oro_brillante', 'argento_lucido', 'rosso_lucido', 'verde_glossy', 'bronzo_lucido', 'rosa_gold'];
+                                const pastelliIds = ['argento_pastello', 'lilla_pastello', 'bianco_puro', 'nero_notte', 'blu_marino'];
 
-                               return (
-                                 <>
-                                   <div className="flex flex-col items-center space-y-1 w-full">
-                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-center gap-1.5 flex-wrap">
-                                       Incisione: <span className="font-extrabold text-black">{currentFoil.name}</span>
-                                     </span>
-                                     <span className={`px-2 py-0.5 rounded-full text-[8px] font-extrabold uppercase border tracking-wider flex items-center gap-1 ${contrastInfo.colorClass}`}>
-                                       <span>{contrastInfo.stars}</span>
-                                       <span>{contrastInfo.label}</span>
-                                     </span>
-                                   </div>
+                                const brillantiOptions = allowedFoilOptions.filter(e => brillantiIds.includes(e.id));
+                                const pastelliOptions = allowedFoilOptions.filter(e => pastelliIds.includes(e.id));
 
-                                   <div className="flex gap-1.5 items-center justify-center flex-wrap py-1">
-                               {allowedFoilOptions.map((e) => {
-                                 const isSelected = engravingId === e.id;
-                                 const isBest = e.id === bestOption?.id;
-                                 return (
-                                   <button
-                                     key={e.id}
-                                     type="button"
-                                     onClick={(ev) => {
-                                       ev.stopPropagation(); // Evita l'apertura della modale
-                                       setActiveEngravings(prev => ({ ...prev, [i]: e.id }));
-                                     }}
-                                     className={`relative w-6 h-6 rounded-full border transition-all active:scale-90 ${
-                                       isSelected 
-                                         ? 'border-brandBlue scale-110 shadow-sm shadow-brandBlue/35' 
-                                         : 'border-transparent hover:border-gray-300 hover:scale-105'
-                                     } p-[2px] bg-white cursor-pointer`}
-                                     title={`${e.name} ${isBest ? '(Consigliato)' : ''}`}
-                                   >
-                                     <div className={`w-full h-full rounded-full ${e.bgClass}`} />
-                                     {isBest && (
-                                       <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border border-white flex items-center justify-center text-[6px] text-white font-bold animate-pulse" title="Miglior contrasto">
-                                         ★
-                                       </span>
-                                     )}
-                                   </button>
-                                 );
-                               })}
-                             </div>
-                           </>
-                         );
-                       })()}
+                                const renderFoilButton = (e) => {
+                                  const isSelected = engravingId === e.id;
+                                  return (
+                                    <button
+                                      key={e.id}
+                                      type="button"
+                                      onClick={(ev) => {
+                                        ev.stopPropagation(); // Evita l'apertura della modale
+                                        setActiveEngravings(prev => ({ ...prev, [i]: e.id }));
+                                      }}
+                                      className={`relative w-6 h-6 rounded-full border transition-all active:scale-90 ${
+                                        isSelected 
+                                          ? 'border-brandBlue scale-110 shadow-sm shadow-brandBlue/35' 
+                                          : 'border-transparent hover:border-gray-300 hover:scale-105'
+                                      } p-[2px] bg-white cursor-pointer`}
+                                      title={e.name}
+                                    >
+                                      <div className={`w-full h-full rounded-full ${e.bgClass} relative overflow-hidden shadow-inner`}>
+                                        {/* Riflesso sferico 3D */}
+                                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/40 pointer-events-none" />
+                                      </div>
+                                    </button>
+                                  );
+                                };
+
+                                return (
+                                  <div className="flex flex-col gap-2.5 w-full">
+                                    {brillantiOptions.length > 0 && (
+                                      <div className="flex flex-col items-center">
+                                        <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest mb-1.5">Incisioni Brillanti</span>
+                                        <div className="flex gap-2 items-center justify-center flex-wrap">
+                                          {brillantiOptions.map(renderFoilButton)}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {pastelliOptions.length > 0 && (
+                                      <div className="flex flex-col items-center">
+                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mt-1.5 mb-1.5">Incisioni Opache / Pastello</span>
+                                        <div className="flex gap-2 items-center justify-center flex-wrap">
+                                          {pastelliOptions.map(renderFoilButton)}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
                      </div>
 
                            <div className="pt-1 pb-4 px-4 flex flex-col gap-3 bg-white shrink-0">
@@ -1344,7 +1466,9 @@ const App: React.FC = () => {
                           <div className="flex items-center gap-1.5 mt-1 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 w-fit">
                             <span className="text-[9px] font-extrabold text-gray-400 uppercase">Incisione scelta:</span>
                             <div className="flex items-center gap-1">
-                              <div className={`w-2.5 h-2.5 rounded-full ${ENGRAVINGS.find(e => e.id === j.engravingColor)?.bgClass || 'bg-gradient-to-br from-[#FFE89C] via-[#D4AF37] to-[#9E7815]'} shadow-inner`} />
+                              <div className={`w-2.5 h-2.5 rounded-full ${ENGRAVINGS.find(e => e.id === j.engravingColor)?.bgClass || 'bg-gradient-to-br from-[#FFE89C] via-[#D4AF37] to-[#9E7815]'} shadow-inner relative overflow-hidden`}>
+                                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/40 pointer-events-none" />
+                              </div>
                               <span className="text-[9px] font-black uppercase text-gray-700">
                                 {ENGRAVINGS.find(e => e.id === j.engravingColor)?.name || 'ORO brillante'}
                               </span>
@@ -1430,6 +1554,44 @@ const App: React.FC = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* Real-time Cost Breakdown inside Step 1 */}
+                    <div className="mt-5 p-4 bg-slate-50/70 rounded-3xl border border-gray-150 space-y-2 text-xs">
+                      <div className="flex justify-between items-center font-extrabold text-slate-800 uppercase tracking-wider text-[10px] pb-1 border-b border-gray-200">
+                        <span>Riepilogo Costo Articolo</span>
+                        <span className="text-brandBlue font-black text-sm">{fmt(calculateJobCost(j))}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] text-slate-600 font-medium">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Copertina:</span>
+                          <span className="font-bold text-slate-700">{fmt(THESIS_MATS[j.matIdx]?.p || 30)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Incisione:</span>
+                          <span className="font-bold text-slate-700 uppercase truncate max-w-[80px]" title={ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante'))?.name || 'ORO brillante'}>
+                            {ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante'))?.name || 'ORO brillante'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Pagg. B&N:</span>
+                          <span className="font-bold text-slate-700">{j.bwPages} ({fmt(j.bwPages * PRICING.bw)})</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Pagg. Colori:</span>
+                          <span className="font-bold text-slate-700">{j.colorPages} ({fmt(j.colorPages * PRICING.color.base)})</span>
+                        </div>
+                        <div className="col-span-2 border-t border-dashed border-gray-200 pt-1.5 flex justify-between items-center text-[11px]">
+                          <span className="font-bold text-slate-500">Costo unitario:</span>
+                          <span className="font-black text-slate-800">
+                            {fmt((j.bwPages * PRICING.bw) + (j.colorPages * PRICING.color.base) + (THESIS_MATS[j.matIdx]?.p || 30))}
+                          </span>
+                        </div>
+                        <div className="col-span-2 flex justify-between items-center">
+                          <span className="font-bold text-slate-500">Copie:</span>
+                          <span className="font-black text-slate-800">x {j.cps}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
                 
@@ -1444,6 +1606,15 @@ const App: React.FC = () => {
                 >
                   ➕ Aggiungi un'altra tesi / copertina
                 </button>
+
+                {/* Dynamic total banner before proceeding to summary */}
+                <div className="bg-emerald-50 rounded-3xl p-5 border border-emerald-100 flex justify-between items-center mt-6">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase text-emerald-800/60 tracking-wider">Totale Provvisorio</span>
+                    <span className="text-xs text-emerald-800/80 font-medium">IVA inclusa, stampa professionale</span>
+                  </div>
+                  <span className="text-3xl font-black text-emerald-700">{fmt(total)}</span>
+                </div>
 
                 {/* Shimmering Button to proceed to summary */}
                 <button
@@ -1461,7 +1632,7 @@ const App: React.FC = () => {
                     transition={{ repeat: Infinity, duration: 1.8, ease: 'linear', repeatDelay: 1 }}
                   />
                   <span className="relative z-10 flex items-center gap-3">
-                    Calcola Preventivo <ArrowDown size={20} className="animate-bounce" />
+                    Termina e Salva <ArrowRight size={20} className="animate-pulse" />
                   </span>
                 </button>
               </div>
@@ -1507,34 +1678,62 @@ const App: React.FC = () => {
             <div className="bg-white rounded-4xl p-6 card-shadow space-y-6 border border-gray-100">
               {tJobs.length > 0 ? (
                 <div className="space-y-6">
-                  {/* Ricevuta di riepilogo costi */}
+                  {/* Ricevuta di riepilogo costi elegante */}
                   <div>
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Dettagli Articoli</h4>
-                    <div className="space-y-4 divide-y divide-gray-100">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Preventivo Tesi d'Eccellenza</h4>
+                    <div className="space-y-6 divide-y divide-gray-150">
                       {tJobs.map((j, idx) => {
                         const mat = THESIS_MATS[j.matIdx];
                         const jobCost = calculateJobCost(j);
-                        const engravingLabel = ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante'))?.name || 'ORO brillante';
+                        const currentFoil = ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante')) || ENGRAVINGS[0];
                         return (
-                          <div key={j.id} className="pt-4 first:pt-0 space-y-1">
-                            <div className="flex justify-between items-start">
-                              <span className="font-black text-sm uppercase text-gray-900 leading-tight">
-                                #{idx + 1} {j.name}
-                              </span>
-                              <span className="font-black text-sm text-brandBlue">{fmt(jobCost)}</span>
+                          <div key={j.id} className="pt-6 first:pt-0 flex flex-col sm:flex-row gap-5 items-center sm:items-start">
+                            {/* Visual Preview Card */}
+                            <div className="w-32 aspect-[3/4] relative rounded-2xl overflow-hidden shadow-md border border-gray-150 bg-gray-950 shrink-0 self-center sm:self-start">
+                              <img src={mat.img} alt={mat.n} className="w-full h-full object-cover" />
+                              <ThesisCoverOverlay foil={currentFoil} candidateName="" />
+                              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 text-white text-[7px] font-black uppercase tracking-widest flex items-center gap-1">
+                                <div className={`w-1.5 h-1.5 rounded-full ${currentFoil.bgClass} shrink-0`} />
+                                {currentFoil.name}
+                              </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] text-gray-500 font-medium">
-                              <div>Incisione: <span className="font-bold text-gray-800 uppercase">{engravingLabel}</span></div>
-                              <div>Copertina: {fmt(mat.p)}</div>
-                              <div>Pagine B&N: {j.bwPages} ({fmt(j.bwPages * PRICING.bw)})</div>
-                              <div>Pagine Colori: {j.colorPages} ({fmt(j.colorPages * PRICING.color.base)})</div>
-                              <div className="col-span-2 border-t border-dashed border-gray-100 mt-1 pt-1">
-                                Numero copie: <span className="font-bold text-gray-800">{j.cps}</span>
+
+                            {/* Description Details Card */}
+                            <div className="flex-1 w-full space-y-2 text-center sm:text-left">
+                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
+                                <span className="font-black text-sm uppercase text-gray-900 leading-tight">
+                                  #{idx + 1} {j.name}
+                                </span>
+                                <span className="font-black text-sm text-brandBlue shrink-0">{fmt(jobCost)}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-gray-500 font-medium">
+                                <div className="text-left">Incisione: <span className="font-bold text-gray-800 uppercase">{currentFoil.name}</span></div>
+                                <div className="text-right sm:text-left">Copertina: <span className="font-bold text-gray-800">{fmt(mat.p)}</span></div>
+                                <div className="text-left">Pagg. B&N: <span className="font-bold text-gray-800">{j.bwPages} ({fmt(j.bwPages * PRICING.bw)})</span></div>
+                                <div className="text-right sm:text-left">Pagg. Colori: <span className="font-bold text-gray-800">{j.colorPages} ({fmt(j.colorPages * PRICING.color.base)})</span></div>
+                                <div className="col-span-2 border-t border-dashed border-gray-100 mt-2 pt-2 text-left">
+                                  Copie richieste: <span className="font-black text-brandBlue text-xs">x {j.cps}</span>
+                                </div>
                               </div>
                             </div>
                           </div>
                         );
                       })}
+                    </div>
+                  </div>
+
+                  {/* WhatsApp Info Block */}
+                  <div className="bg-emerald-50/60 border border-emerald-100/80 rounded-3xl p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                      <svg className="w-5 h-5 text-emerald-600 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.114-2.906-6.99C16.546 1.866 14.072 1.83 11.43 1.83c-5.44 0-9.866 4.418-9.87 9.864 0 1.902.504 3.75 1.464 5.362l-.993 3.628 3.717-.975zm11.167-7.464c-.309-.155-1.829-.902-2.107-1.002-.278-.1-.48-.15-.68.15-.2.3-.775.976-.95 1.176-.175.2-.351.225-.66.07-.309-.155-1.305-.48-2.485-1.534-.918-.818-1.538-1.829-1.718-2.137-.18-.31-.02-.477.135-.632.14-.139.31-.35.465-.525.155-.175.206-.3.309-.5.103-.2.051-.375-.025-.525-.077-.15-1.002-2.414-1.378-3.32-.367-.88-.74-.76-.102-.76-.2-.05-.401-.05-.575.125-.175.175-.68.665-.68 1.62s.696 1.874.794 2.005c.1.13 1.369 2.091 3.316 2.93.463.2.824.32 1.107.41.466.147.89.126 1.226.076.375-.056 1.143-.467 1.302-.917.16-.45.16-.837.113-.917-.047-.08-.175-.13-.484-.285z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">Per Info e Ordini</p>
+                      <a href="https://api.whatsapp.com/send?phone=3917972545" target="_blank" rel="noopener noreferrer" className="text-sm font-black text-emerald-700 hover:underline flex items-center gap-1.5 leading-tight">
+                        391 7972545
+                      </a>
                     </div>
                   </div>
 
@@ -1547,49 +1746,64 @@ const App: React.FC = () => {
                     <span className="text-3xl font-black text-emerald-700">{fmt(total)}</span>
                   </div>
 
-                  {/* Input Nome */}
-                  <div className="space-y-2 pt-2">
-                      <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Intestazione Ordine (Nome e Cognome)</label>
-                      <input 
-                        type="text" 
-                        placeholder="INSERISCI IL TUO NOME PER IL FRONTESPIZIO" 
-                        value={customer} 
-                        onChange={e => setCustomer(e.target.value)} 
-                        className="w-full h-14 px-5 border rounded-xl font-bold text-sm uppercase focus:ring-2 focus:ring-brandBlue/10 focus:border-brandBlue outline-none transition-all placeholder:text-gray-300 bg-gray-50" 
-                      />
-                  </div>
-
-                  {/* Tasto Salva Ordine in Galleria (Sblocca con Nome) */}
-                  <button 
-                      onClick={saveReceiptPng} 
-                      disabled={tJobs.length === 0 || !customer.trim()}
-                      className={`relative overflow-hidden w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all btn-touch cursor-pointer ${
-                        !customer.trim() 
-                          ? "bg-gray-150 text-gray-400 border border-gray-300/60 cursor-not-allowed shadow-none" 
-                          : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-900/20"
-                      }`}
-                  >
-                    {/* Shimmer effect only when unlocked */}
-                    {customer.trim() && (
+                  {/* Opzioni di Salvataggio e Condivisione */}
+                  <div className="space-y-3 pt-3">
+                    {/* Invia con WhatsApp */}
+                    <a 
+                      href={(() => {
+                        let message = `Ciao SUDPEN, vorrei richiedere informazioni per questo preventivo tesi:\n\n`;
+                        tJobs.forEach((j, idx) => {
+                          const mat = THESIS_MATS[j.matIdx];
+                          const engravingLabel = ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante'))?.name || 'ORO brillante';
+                          message += `📚 *TESI #${idx + 1}: ${j.name.toUpperCase()}*\n`;
+                          message += `• Incisione: *${engravingLabel.toUpperCase()}*\n`;
+                          message += `• Pagine B&N: ${j.bwPages} (${fmt(j.bwPages * PRICING.bw)})\n`;
+                          message += `• Pagine Colori: ${j.colorPages} (${fmt(j.colorPages * PRICING.color.base)})\n`;
+                          message += `• Copertina: ${fmt(mat.p)}\n`;
+                          message += `• Copie: *x${j.cps}*\n`;
+                          message += `• Costo Articolo: *${fmt(calculateJobCost(j))}*\n\n`;
+                        });
+                        message += `💰 *TOTALE COMPLESSIVO: ${fmt(total)}* (IVA inclusa)\n\nGrazie!`;
+                        return `https://api.whatsapp.com/send?phone=3917972545&text=${encodeURIComponent(message)}`;
+                      })()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative overflow-hidden w-full h-16 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all btn-touch cursor-pointer shadow-xl shadow-emerald-900/10"
+                    >
                       <motion.div
                         className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 pointer-events-none"
                         initial={{ x: '-100%' }}
                         animate={{ x: '100%' }}
                         transition={{ repeat: Infinity, duration: 1.8, ease: 'linear', repeatDelay: 1 }}
                       />
-                    )}
-                    <span className="relative z-10 flex items-center gap-2.5">
-                      {!customer.trim() ? (
-                        <>
-                          Inserisci il nome per salvare <Lock size={18} className="text-gray-400" />
-                        </>
-                      ) : (
-                        <>
-                          Salva Ordine in Galleria <Download size={20} className="animate-bounce" />
-                        </>
-                      )}
-                    </span>
-                  </button>
+                      <span className="relative z-10 flex items-center gap-2.5">
+                        <svg className="w-5 h-5 fill-current text-white" viewBox="0 0 24 24">
+                          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.114-2.906-6.99C16.546 1.866 14.072 1.83 11.43 1.83c-5.44 0-9.866 4.418-9.87 9.864 0 1.902.504 3.75 1.464 5.362l-.993 3.628 3.717-.975zm11.167-7.464c-.309-.155-1.829-.902-2.107-1.002-.278-.1-.48-.15-.68.15-.2.3-.775.976-.95 1.176-.175.2-.351.225-.66.07-.309-.155-1.305-.48-2.485-1.534-.918-.818-1.538-1.829-1.718-2.137-.18-.31-.02-.477.135-.632.14-.139.31-.35.465-.525.155-.175.206-.3.309-.5.103-.2.051-.375-.025-.525-.077-.15-1.002-2.414-1.378-3.32-.367-.88-.74-.76-.102-.76-.2-.05-.401-.05-.575.125-.175.175-.68.665-.68 1.62s.696 1.874.794 2.005c.1.13 1.369 2.091 3.316 2.93.463.2.824.32 1.107.41.466.147.89.126 1.226.076.375-.056 1.143-.467 1.302-.917.16-.45.16-.837.113-.917-.047-.08-.175-.13-.484-.285z" />
+                        </svg>
+                        Invia con WhatsApp
+                      </span>
+                    </a>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Salva PDF */}
+                      <button 
+                        onClick={saveReceiptPdf} 
+                        className="w-full h-14 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-slate-950/10"
+                      >
+                        <Download size={16} />
+                        Salva PDF
+                      </button>
+
+                      {/* Salva Immagine */}
+                      <button 
+                        onClick={saveReceiptPng} 
+                        className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-indigo-950/10"
+                      >
+                        <Download size={16} />
+                        Salva Immagine
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-400 text-sm font-medium">Nessun articolo nel preventivo</div>
