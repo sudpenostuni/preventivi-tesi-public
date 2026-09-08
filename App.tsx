@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { THESIS_MATS, WA_PHONE, LOGO_URL, GSHEET_URL, PRICING, USE_GOOGLE_DRIVE, DRIVE_IMAGE_IDS } from './data';
 import { CraftsmanshipModal } from './components/CraftsmanshipModal';
+import { savePreventivoToFirestore } from './firebase';
 
 export function hexToRgb(hex: string) {
   const normalized = (hex || "#000000").replace('#', '');
@@ -827,6 +828,39 @@ const App: React.FC = () => {
   };
 
   const logToSheet = async () => {
+    // Salvataggio su Firestore per la condivisione con l'app Backend degli operatori
+    if (tJobs.length > 0) {
+      try {
+        const items = tJobs.map((j) => {
+          const mat = THESIS_MATS[j.matIdx];
+          const costoSingolo = calculateJobCost(j);
+          const engravingObj = ENGRAVINGS.find(e => e.id === (j.engravingColor || 'oro_brillante'));
+          return {
+            id: j.id,
+            name: j.name,
+            materiale: mat?.n || '',
+            materialePrezzo: mat?.p || 30,
+            incisione: j.engravingColor || 'oro_brillante',
+            incisioneNome: engravingObj?.name || 'ORO brillante',
+            bwPages: safeNum(j.bwPages),
+            colorPages: safeNum(j.colorPages),
+            cps: safeNum(j.cps),
+            costoSubtotale: costoSingolo
+          };
+        });
+
+        await savePreventivoToFirestore({
+          cliente: customer.toUpperCase() || 'ANONIMO WEB',
+          totale: total,
+          copieTotali: tJobs.reduce((acc, j) => acc + safeNum(j.cps), 0),
+          items,
+          stato: 'nuovo'
+        });
+      } catch (err) {
+        console.error('Errore salvataggio Firestore:', err);
+      }
+    }
+
     if (!GSHEET_URL) return;
     
     // Generiamo una descrizione estremamente dettagliata per ciascuna tesi presente
@@ -1750,6 +1784,7 @@ const App: React.FC = () => {
                   <div className="space-y-3 pt-3">
                     {/* Invia con WhatsApp */}
                     <a 
+                      onClick={() => logToSheet()}
                       href={(() => {
                         let message = `Ciao SUDPEN, vorrei richiedere informazioni per questo preventivo tesi:\n\n`;
                         tJobs.forEach((j, idx) => {
