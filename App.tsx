@@ -702,6 +702,63 @@ const App: React.FC = () => {
   const detailsRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const startBoxRef = useRef<HTMLDivElement>(null);
+  const autoScrollTimerRef = useRef<any>(null);
+  const autoScrollTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return;
+
+    const checkAndObserve = () => {
+      const isMobile = window.innerWidth < 768;
+      if (!isMobile) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            // Se visibile almeno al 90% (per sicurezza su schermi con altezze ridotte)
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.9) {
+              if (!autoScrollTriggeredRef.current && !introUnlocked && !isStarted) {
+                if (!autoScrollTimerRef.current) {
+                  autoScrollTimerRef.current = setTimeout(() => {
+                    setIntroUnlocked(true);
+                    autoScrollTriggeredRef.current = true;
+                    observer.disconnect();
+                  }, 1000); // Almeno 1 secondo (1000ms)
+                }
+              }
+            } else {
+              // Se l'utente scorre via o il box non è del tutto visibile, cancella il timer
+              if (autoScrollTimerRef.current) {
+                clearTimeout(autoScrollTimerRef.current);
+                autoScrollTimerRef.current = null;
+              }
+            }
+          });
+        },
+        {
+          threshold: [0.9]
+        }
+      );
+
+      if (startBoxRef.current) {
+        observer.observe(startBoxRef.current);
+      }
+
+      return observer;
+    };
+
+    const observerInstance = checkAndObserve();
+
+    return () => {
+      if (observerInstance) {
+        observerInstance.disconnect();
+      }
+      if (autoScrollTimerRef.current) {
+        clearTimeout(autoScrollTimerRef.current);
+      }
+    };
+  }, [introUnlocked, isStarted]);
 
   useEffect(() => {
     let tot = 0;
@@ -751,7 +808,7 @@ const App: React.FC = () => {
           body: JSON.stringify(payload)
         });
       } catch (e) {
-        console.error("Error logging opening:", e);
+        console.warn("Failed to log opening telemetry (normal if adblocker/CORS is active):", e);
       }
     };
     logOpening();
@@ -891,7 +948,7 @@ const App: React.FC = () => {
         body: JSON.stringify(payload)
       });
     } catch (e) {
-      console.error("Error logging to spreadsheet:", e);
+      console.warn("Failed to log spreadsheet telemetry (normal if adblocker/CORS is active):", e);
     }
   };
 
@@ -1241,7 +1298,7 @@ const App: React.FC = () => {
             className="space-y-6"
           >
              {/* 4. SCHERMATA DI AVVIO / CONFIGURATORE */}
-             <div className="bg-white rounded-4xl p-10 card-shadow flex flex-col items-center animate-slide">
+             <div ref={startBoxRef} className="bg-white rounded-4xl p-10 card-shadow flex flex-col items-center animate-slide">
                 <div className="w-full flex flex-col items-center gap-10">
                   <img src={LOGO_URL} className="h-32 w-auto opacity-100" alt="Sudpen" />
                   <div className="text-center space-y-2">
@@ -1815,29 +1872,18 @@ const App: React.FC = () => {
                         <svg className="w-5 h-5 fill-current text-white" viewBox="0 0 24 24">
                           <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.114-2.906-6.99C16.546 1.866 14.072 1.83 11.43 1.83c-5.44 0-9.866 4.418-9.87 9.864 0 1.902.504 3.75 1.464 5.362l-.993 3.628 3.717-.975zm11.167-7.464c-.309-.155-1.829-.902-2.107-1.002-.278-.1-.48-.15-.68.15-.2.3-.775.976-.95 1.176-.175.2-.351.225-.66.07-.309-.155-1.305-.48-2.485-1.534-.918-.818-1.538-1.829-1.718-2.137-.18-.31-.02-.477.135-.632.14-.139.31-.35.465-.525.155-.175.206-.3.309-.5.103-.2.051-.375-.025-.525-.077-.15-1.002-2.414-1.378-3.32-.367-.88-.74-.76-.102-.76-.2-.05-.401-.05-.575.125-.175.175-.68.665-.68 1.62s.696 1.874.794 2.005c.1.13 1.369 2.091 3.316 2.93.463.2.824.32 1.107.41.466.147.89.126 1.226.076.375-.056 1.143-.467 1.302-.917.16-.45.16-.837.113-.917-.047-.08-.175-.13-.484-.285z" />
                         </svg>
-                        Invia con WhatsApp
+                        Condividi con WhatsApp
                       </span>
                     </a>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      {/* Salva PDF */}
-                      <button 
-                        onClick={saveReceiptPdf} 
-                        className="w-full h-14 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-slate-950/10"
-                      >
-                        <Download size={16} />
-                        Salva PDF
-                      </button>
-
-                      {/* Salva Immagine */}
-                      <button 
-                        onClick={saveReceiptPng} 
-                        className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-indigo-950/10"
-                      >
-                        <Download size={16} />
-                        Salva Immagine
-                      </button>
-                    </div>
+                    {/* Scarica Preventivo */}
+                    <button 
+                      onClick={saveReceiptPng} 
+                      className="w-full h-14 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-slate-950/10"
+                    >
+                      <Download size={16} />
+                      Scarica Preventivo
+                    </button>
                   </div>
                 </div>
               ) : (
